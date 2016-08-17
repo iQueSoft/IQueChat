@@ -3,6 +3,11 @@ package com.iquesoft.andrew.seedprojectchat.di.modules;
 import android.app.Application;
 
 import com.iquesoft.andrew.seedprojectchat.app.SeedProjectChatApp;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.RegisterFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.LoginFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.RegisterFragment;
 
 import javax.inject.Singleton;
 
@@ -26,4 +31,35 @@ public class SeedProjectChatModule {
     public Application provideApplication(){
         return app;
     }
+
+    @Provides
+    @Singleton
+    public LoginFragmentPresenter provideLoginFragmentPresenter(){
+        return new LoginFragmentPresenter();
+    }
+
+    @Provides
+    @Singleton
+    public LoginFragment provideLoginFragment(){
+        return new LoginFragment();
+    }
+
+    @Provides
+    @Singleton
+    public RegisterFragmentPresenter provideRegisterFragmentPresenter(){
+        return new RegisterFragmentPresenter();
+    }
+
+    @Provides
+    @Singleton
+    public RegisterFragment provideRegisterFragment(){
+        return new RegisterFragment();
+    }
+
+    @Provides
+    @Singleton
+    public ValidateUtil provideValidateUtil(){
+        return new ValidateUtil();
+    }
+
 }

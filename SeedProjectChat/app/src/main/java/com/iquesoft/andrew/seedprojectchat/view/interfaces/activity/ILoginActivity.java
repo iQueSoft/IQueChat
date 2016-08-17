@@ -1,4 +1,4 @@
-package com.iquesoft.andrew.seedprojectchat.view.interfaces.activityView;
+package com.iquesoft.andrew.seedprojectchat.view.interfaces.activity;
 
 import android.content.Context;
 

@@ -52,5 +52,7 @@ dependencies {
     compile 'com.squareup.retrofit2:converter-jackson:2.1.0'
     compile 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile files('libs/dagger-intellij-plugin.jar')
+    compile fileTree(include: ['*.jar'], dir: '../libs')
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha6'
+    compile 'com.android.support:support-v4:24.1.1'
 }
