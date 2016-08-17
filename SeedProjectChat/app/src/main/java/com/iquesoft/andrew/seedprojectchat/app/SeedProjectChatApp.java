@@ -3,6 +3,8 @@ package com.iquesoft.andrew.seedprojectchat.app;
 import android.app.Application;
 import android.content.Context;
 
+import com.backendless.Backendless;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultsBackendlessKey;
 import com.iquesoft.andrew.seedprojectchat.di.components.DaggerISeedProjectChatComponent;
 import com.iquesoft.andrew.seedprojectchat.di.components.ISeedProjectChatComponent;
 import com.iquesoft.andrew.seedprojectchat.di.modules.SeedProjectChatModule;
@@ -28,6 +30,8 @@ public class SeedProjectChatApp extends Application {
         RealmConfiguration config = new RealmConfiguration.Builder(this).build();
         Realm.setDefaultConfiguration(config);
         buildGraphAndInject();
+        Backendless.setUrl( DefaultsBackendlessKey.SERVER_URL );
+        Backendless.initApp( this, DefaultsBackendlessKey.APPLICATION_ID, DefaultsBackendlessKey.SECRET_KEY, DefaultsBackendlessKey.VERSION );
     }
 
     public ISeedProjectChatComponent getAppComponent(){

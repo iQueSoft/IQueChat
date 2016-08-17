@@ -1,7 +1,7 @@
 package com.iquesoft.andrew.seedprojectchat.di.modules;
 
-import com.iquesoft.andrew.seedprojectchat.presenter.classes.activityPresenter.LoginActivityPresenter;
-import com.iquesoft.andrew.seedprojectchat.view.interfaces.activityView.ILoginActivity;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.LoginActivityPresenter;
+import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.ILoginActivity;
 
 import dagger.Module;
 import dagger.Provides;

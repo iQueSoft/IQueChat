@@ -1,4 +1,4 @@
-package com.iquesoft.andrew.seedprojectchat.view.classes.activityView;
+package com.iquesoft.andrew.seedprojectchat.view.classes.fragments;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -6,21 +6,25 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
 import com.iquesoft.andrew.seedprojectchat.R;
-import com.iquesoft.andrew.seedprojectchat.common.BaseActivity;
-import com.iquesoft.andrew.seedprojectchat.di.IHasComponent;
-import com.iquesoft.andrew.seedprojectchat.di.components.DaggerILoginActivityComponent;
+import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.di.components.ILoginActivityComponent;
-import com.iquesoft.andrew.seedprojectchat.di.components.ISeedProjectChatComponent;
-import com.iquesoft.andrew.seedprojectchat.di.modules.LoginActivityModule;
-import com.iquesoft.andrew.seedprojectchat.presenter.classes.activityPresenter.LoginActivityPresenter;
-import com.iquesoft.andrew.seedprojectchat.view.interfaces.activityView.ILoginActivity;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
+import com.iquesoft.andrew.seedprojectchat.view.classes.activity.LoginActivity;
+import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ILoginFragment;
 
 import javax.inject.Inject;
 
@@ -29,48 +33,92 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
- * A login screen that offers login via email/password.
+ * Created by Andrew on 17.08.2016.
  */
-public class LoginActivity extends BaseActivity implements ILoginActivity, IHasComponent<ILoginActivityComponent>{
 
-    private ILoginActivityComponent loginActivityComponent;
-
+public class LoginFragment extends BaseFragment implements ILoginFragment {
     @Inject
-    LoginActivityPresenter presenter;
+    LoginFragmentPresenter presenter;
+    @Inject
+    ValidateUtil validateUtil;
 
-    FragmentManager fragmentManager;
-    // UI references.
     @BindView(R.id.email)
     AutoCompleteTextView mEmailView;
-    @BindView(R.id.password)
+    @BindView(R.id.password_tv)
     EditText mPasswordView;
     @BindView(R.id.login_progress)
     View mProgressView;
     @BindView(R.id.login_form)
     View mLoginFormView;
-//    @BindView(R.id.sign_in_button)
-//    Button mEmailSignInButton;
+    @BindView(R.id.remember_password)
+    CheckBox rememberPassword;
+
+    private View rootView;
+    private LoginActivity loginActivity;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        ButterKnife.bind(this);
-        fragmentManager = getSupportFragmentManager();
-        // Set up the login form.
+        Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivityContext())
+        {
+            @Override
+            public void handleResponse( Boolean isValidLogin )
+            {
+                if( isValidLogin && Backendless.UserService.CurrentUser() == null )
+                {
+                    String currentUserId = Backendless.UserService.loggedInUser();
 
-//        mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {
-//                attemptLogin();
-//                return true;
-//        });
+                    if( !currentUserId.equals( "" ) )
+                    {
+                        Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>( getActivityContext())
+                        {
+                            @Override
+                            public void handleResponse( BackendlessUser currentUser )
+                            {
+                                super.handleResponse( currentUser );
+                                Backendless.UserService.setCurrentUser( currentUser );
+                                showProgress(false);
+                            }
+                        } );
+                    }
+                }
 
-//        mEmailSignInButton.setOnClickListener(view -> attemptLogin());
+                super.handleResponse( isValidLogin );
+            }
+        });
+    }
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (rootView == null) {
+            rootView = inflater.inflate(R.layout.fragment_login, container, false);
+            ButterKnife.bind(this, rootView);
+        }
+        return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        this.getComponent(ILoginActivityComponent.class).inject(this);
+        loginActivity = (LoginActivity) getActivity();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        presenter.init(this);
     }
 
     @OnClick(R.id.sign_in_button)
     void loginClick(View view){
         attemptLogin();
+    }
+
+    @OnClick(R.id.email_register_button)
+    void registerClick(View view){
+        loginActivity.setRegisterFragment();
     }
 
     /**
@@ -92,7 +140,7 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !presenter.isPasswordValid(password)) {
+        if (!TextUtils.isEmpty(password) && !validateUtil.isPasswordValid(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -103,7 +151,7 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!presenter.isEmailValid(email)) {
+        } else if (!validateUtil.isEmailValid(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
@@ -117,6 +165,7 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+            presenter.onLoginButtonClicked(mEmailView.getText().toString(), mPasswordView.getText().toString(), rememberPassword.isChecked());
         }
     }
 
@@ -155,37 +204,9 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
         }
     }
 
-    @Override
-    public Context getContext() {
-        return getBaseContext();
-    }
 
     @Override
-    public void popFragmentFromStack() {
-        fragmentManager.popBackStack();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            presenter.onBackPressed();
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    protected void setupComponent(ISeedProjectChatComponent appComponent) {
-        loginActivityComponent = DaggerILoginActivityComponent.builder()
-                .iSeedProjectChatComponent(appComponent)
-                .loginActivityModule(new LoginActivityModule(this))
-                .build();
-        loginActivityComponent.inject(this);
-    }
-
-    @Override
-    public ILoginActivityComponent getComponent() {
-        return loginActivityComponent;
+    public Context getActivityContext() {
+        return getActivity();
     }
 }
-

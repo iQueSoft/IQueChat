@@ -1,6 +1,7 @@
 package com.iquesoft.andrew.seedprojectchat.common;
 
-import android.app.Fragment;
+
+import android.support.v4.app.Fragment;
 
 import com.iquesoft.andrew.seedprojectchat.di.IHasComponent;
 
