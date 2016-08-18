@@ -8,6 +8,6 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ILoginFragm
  */
 
 public interface ILoginFragmentPresenter extends BaseFragmentPresenter<ILoginFragment> {
-    void onCreate();
     void onLoginButtonClicked(String userEMail, String password, boolean rememberLogin);
+    void onRestorePasswordButtonClicked(String eMail);
 }
