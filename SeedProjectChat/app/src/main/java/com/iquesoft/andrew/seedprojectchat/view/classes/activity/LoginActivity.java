@@ -40,7 +40,6 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
 
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
-    // UI references.
 
 
     @Override

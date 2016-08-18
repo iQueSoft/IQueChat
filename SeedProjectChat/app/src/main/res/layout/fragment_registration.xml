@@ -14,11 +14,11 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
+            android:inputType="textEmailAddress"
             android:ems="10"
             android:id="@+id/e_mail_tv"
             android:layout_weight="1"
-            android:hint="eMail" />
+            android:hint="@string/prompt_email" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -32,7 +32,7 @@
             android:ems="10"
             android:id="@+id/username_tv"
             android:layout_weight="1"
-            android:hint="UserName" />
+            android:hint="@string/username" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -42,15 +42,15 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
+            android:inputType="textPassword"
             android:ems="10"
             android:id="@+id/password_tv"
             android:layout_weight="1"
-            android:hint="Password" />
+            android:hint="@string/prompt_password" />
     </android.support.design.widget.TextInputLayout>
 
     <Button
-        android:text="Register"
+        android:text="@string/action_register"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/register_button"
