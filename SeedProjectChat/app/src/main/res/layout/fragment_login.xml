@@ -42,14 +42,15 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:text="Restore Password"
+                    android:text="@string/restore_password"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textView"
+                    android:id="@+id/tv_recovery"
                     android:layout_weight="1"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="8dp"
-                    android:layout_gravity="end" />
+                    android:layout_gravity="end"
+                    android:clickable="true" />
             </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
@@ -90,7 +91,7 @@
             </android.support.design.widget.TextInputLayout>
 
             <CheckBox
-                android:text="Remember Password"
+                android:text="@string/remember_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"

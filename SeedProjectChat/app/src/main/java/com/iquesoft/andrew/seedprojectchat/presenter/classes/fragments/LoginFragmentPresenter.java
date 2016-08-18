@@ -1,9 +1,13 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
+import android.content.Intent;
+import android.widget.Toast;
+
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.ILoginFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ILoginFragment;
 
 import javax.inject.Inject;
@@ -24,25 +28,34 @@ public class LoginFragmentPresenter implements ILoginFragmentPresenter {
         this.view = view;
     }
 
-    @Override
-    public void onCreate() {
-
-    }
 
     @Override
     public void onLoginButtonClicked(String userEMail, String password, boolean rememberLogin)
     {
-//        String identity = identityField.getText().toString();
-//        String password = passwordField.getText().toString();
-//        boolean rememberLogin = rememberLoginBox.isChecked();
 
         Backendless.UserService.login( userEMail, password, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
         {
             public void handleResponse( BackendlessUser backendlessUser )
             {
                 super.handleResponse( backendlessUser );
+                view.getActivityContext().startActivity(new Intent(view.getActivityContext(), MainActivity.class));
+                view.showProgress(false);
+                view.getLoginActivity().finish();
             }
         }, rememberLogin );
     }
 
+    @Override
+    public void onRestorePasswordButtonClicked(String eMail)
+    {
+        Backendless.UserService.restorePassword( eMail, new DefaultBackendlessCallback<Void>(view.getActivityContext())
+        {
+            @Override
+            public void handleResponse( Void response )
+            {
+                super.handleResponse( response );
+                Toast.makeText(view.getActivityContext(), "Please check you eMail", Toast.LENGTH_LONG).show();
+            }
+        } );
+    }
 }

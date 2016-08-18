@@ -58,34 +58,25 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
             passwordText.setError("Field 'password' cannot be empty or contain less 4 characters");
         }
 
-        chatUser = new ChatUser();
-
-        if( email != null )
+        if( email != null & name != null & password != null)
         {
+            chatUser = new ChatUser();
             chatUser.setEmail( email );
-        }
-
-        if( name != null )
-        {
             chatUser.setName( name );
-        }
-
-        if( password != null )
-        {
             chatUser.setPassword( password );
+            Backendless.UserService.register( chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
+            {
+                @Override
+                public void handleResponse( BackendlessUser response )
+                {
+                    super.handleResponse( response );
+                    Log.i("response", response.toString());
+                    showToast("You sucsesfull registred");
+                    view.getLoginActivity().setLoginFragment();
+                }
+            });
         }
 
-        Backendless.UserService.register( chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
-        {
-            @Override
-            public void handleResponse( BackendlessUser response )
-            {
-                super.handleResponse( response );
-                Log.i("response", response.toString());
-                showToast("You sucsesfull registred");
-                view.getLoginActivity().setLoginFragment();
-            }
-        } );
     }
 
     private void showToast( String msg )

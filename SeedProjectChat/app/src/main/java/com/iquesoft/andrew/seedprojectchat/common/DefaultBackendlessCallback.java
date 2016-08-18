@@ -27,7 +27,15 @@ public class DefaultBackendlessCallback<T> extends BackendlessCallback<T> {
     @Override
     public void handleResponse( T response )
     {
-        Log.d("response", response.toString());
+        if (response != null){
+            try {
+                Log.d("response", response.toString());
+            } catch (Throwable t){
+                t.printStackTrace();
+            }
+        } else {
+            return;
+        }
     }
 
     @Override

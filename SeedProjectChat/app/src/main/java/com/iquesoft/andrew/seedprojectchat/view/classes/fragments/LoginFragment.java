@@ -4,14 +4,17 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
@@ -24,6 +27,7 @@ import com.iquesoft.andrew.seedprojectchat.di.components.ILoginActivityComponent
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.LoginActivity;
+import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ILoginFragment;
 
 import javax.inject.Inject;
@@ -77,7 +81,9 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
                             {
                                 super.handleResponse( currentUser );
                                 Backendless.UserService.setCurrentUser( currentUser );
+                                startActivity(new Intent(getActivityContext(), MainActivity.class));
                                 showProgress(false);
+                                loginActivity.finish();
                             }
                         } );
                     }
@@ -119,6 +125,11 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
     @OnClick(R.id.email_register_button)
     void registerClick(View view){
         loginActivity.setRegisterFragment();
+    }
+
+    @OnClick(R.id.tv_recovery)
+    void recoveryClick(View view){
+        showRestorePasswordDialog();
     }
 
     /**
@@ -173,21 +184,13 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
      * Shows the progress UI and hides the login form.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
+    @Override
+    public void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-//            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-//                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-//                @Override
-//                public void onAnimationEnd(Animator animation) {
-//                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-//                }
-//            });
 
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mProgressView.animate().setDuration(shortAnimTime).alpha(
@@ -208,5 +211,33 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
     @Override
     public Context getActivityContext() {
         return getActivity();
+    }
+
+    @Override
+    public LoginActivity getLoginActivity() {
+        return loginActivity;
+    }
+
+
+    private void showRestorePasswordDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View view = inflater.inflate(R.layout.fragment_restore_password, null);
+        builder.setView(view);
+        EditText restorePassword = (EditText) view.findViewById(R.id.email_recovery);
+        Button recoveryButton = (Button) view.findViewById(R.id.button_recovery);
+        AlertDialog dialog = builder.create();
+        recoveryButton.setOnClickListener(view1 -> {
+            if (validateUtil.isEmailValid(restorePassword.getText().toString())){
+                presenter.onRestorePasswordButtonClicked(restorePassword.getText().toString());
+                dialog.cancel();
+            } else {
+                restorePassword.setError("Incorrect eMail");
+                restorePassword.requestFocus();
+            }
+        });
+        dialog.setCancelable(true);
+        // display dialog
+        dialog.show();
     }
 }
