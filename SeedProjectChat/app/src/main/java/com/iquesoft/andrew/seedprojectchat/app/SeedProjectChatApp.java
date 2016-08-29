@@ -32,6 +32,7 @@ public class SeedProjectChatApp extends Application {
         buildGraphAndInject();
         Backendless.setUrl( DefaultsBackendlessKey.SERVER_URL );
         Backendless.initApp( this, DefaultsBackendlessKey.APPLICATION_ID, DefaultsBackendlessKey.SECRET_KEY, DefaultsBackendlessKey.VERSION );
+        Backendless.Logging.setLogReportingPolicy(100, 60);
     }
 
     public ISeedProjectChatComponent getAppComponent(){

@@ -5,6 +5,7 @@ import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
+import com.backendless.exceptions.BackendlessFault;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.ILoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
@@ -41,6 +42,12 @@ public class LoginFragmentPresenter implements ILoginFragmentPresenter {
                 view.getActivityContext().startActivity(new Intent(view.getActivityContext(), MainActivity.class));
                 view.showProgress(false);
                 view.getLoginActivity().finish();
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                super.handleFault(fault);
+                view.showProgress(false);
             }
         }, rememberLogin );
     }
