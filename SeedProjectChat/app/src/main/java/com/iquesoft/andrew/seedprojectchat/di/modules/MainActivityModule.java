@@ -1,6 +1,7 @@
 package com.iquesoft.andrew.seedprojectchat.di.modules;
 
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FriendsFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
 
 import dagger.Module;
@@ -26,5 +27,10 @@ public class MainActivityModule {
     @Provides
     MainActivityPresenter provideMainActivityPresenter(IMainActivity view){
         return new MainActivityPresenter(view);
+    }
+
+    @Provides
+    FriendsFragmentPresenter provideFriendsFragmentPresenter(){
+        return new FriendsFragmentPresenter();
     }
 }

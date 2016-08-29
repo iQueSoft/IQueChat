@@ -1,14 +1,24 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.activity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
+import com.backendless.Backendless;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseActivity;
 import com.iquesoft.andrew.seedprojectchat.di.IHasComponent;
@@ -17,7 +27,10 @@ import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.di.components.ISeedProjectChatComponent;
 import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FriendsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
+import com.mikhaellopez.circularimageview.CircularImageView;
+import com.squareup.picasso.Picasso;
 
 import javax.inject.Inject;
 
@@ -27,6 +40,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Inject
     MainActivityPresenter presenter;
+
+    @Inject
+    FriendsFragment friendsFragment;
+
+    //@BindView(R.id.header_image_view)
+    CircularImageView headerImage;
+    //@BindView(R.id.tv_user_name)
+    TextView userName;
+    //@BindView(R.id.tv_user_email)
+    TextView userEMail;
+
+    private FragmentManager fragmentManager;
+    private FragmentTransaction fragmentTransaction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +66,23 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+        fragmentManager = getSupportFragmentManager();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        View headerView = navigationView.getHeaderView(0);
+        headerImage = (CircularImageView) headerView.findViewById(R.id.header_image_view);
+        userName = (TextView) headerView.findViewById(R.id.tv_user_name);
+        userEMail = (TextView) headerView.findViewById(R.id.tv_user_email);
+
+        Uri uri = Uri.parse(Backendless.UserService.CurrentUser().getProperty("photo").toString());
+        Picasso.with(getBaseContext()).load(uri).placeholder(R.drawable.seed_logo).into(headerImage);
+        userName.setText(Backendless.UserService.CurrentUser().getProperty("name").toString());
+        userEMail.setText(Backendless.UserService.CurrentUser().getProperty("email").toString());
+
     }
+
 
     @Override
     public void onBackPressed() {
@@ -70,7 +109,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            Backendless.UserService.logout(new AsyncCallback<Void>() {
+                public void handleResponse(Void response) {
+                    // user has been logged out.
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finish();
+                }
+                public void handleFault(BackendlessFault fault) {
+                    // something went wrong and logout failed, to get the error code call fault.getCode()
+                }
+            });
             return true;
         }
 
@@ -83,8 +132,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_friends) {
             // Handle the camera action
+            replaceFragment(friendsFragment, "friendsFragment");
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
@@ -100,6 +150,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void replaceFragment(Fragment fragment, String TAG) {
+        fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.container, fragment, TAG);
+        fragmentTransaction.addToBackStack("backpressed stack");
+        fragmentTransaction.commit();
     }
 
     @Override

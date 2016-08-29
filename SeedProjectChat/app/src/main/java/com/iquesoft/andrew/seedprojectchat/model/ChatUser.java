@@ -7,6 +7,7 @@ import com.backendless.BackendlessUser;
  */
 
 public class ChatUser extends BackendlessUser {
+
     public String getEmail()
     {
         return super.getEmail();
@@ -22,6 +23,16 @@ public class ChatUser extends BackendlessUser {
         return super.getPassword();
     }
 
+    public String getDevice_id()
+    {
+        return (String) super.getProperty( "device_id" );
+    }
+
+    public void setDevice_id( String device_id )
+    {
+        super.setProperty( "device_id", device_id );
+    }
+
     public String getName()
     {
         return (String) super.getProperty( "name" );
@@ -31,4 +42,25 @@ public class ChatUser extends BackendlessUser {
     {
         super.setProperty( "name", name );
     }
+
+    public String getPhoto()
+    {
+        return (String) super.getProperty( "photo" );
+    }
+
+    public void setPhoto( String photo )
+    {
+        super.setProperty( "photo", photo );
+    }
+
+    public Boolean getOnline()
+    {
+        return (Boolean) super.getProperty( "online" );
+    }
+
+    public void setOnline( Boolean online )
+    {
+        super.setProperty( "online", online );
+    }
+
 }
