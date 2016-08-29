@@ -1,15 +1,23 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+import com.backendless.files.BackendlessFile;
+import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IRegisterFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IRegisterFragment;
+import com.mikhaellopez.circularimageview.CircularImageView;
+import com.squareup.picasso.Picasso;
 
 import javax.inject.Inject;
 
@@ -21,6 +29,7 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
 
     private IRegisterFragment view;
     private ChatUser chatUser;
+    private String uriPhoto;
 
 
     @Inject
@@ -31,6 +40,29 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
     @Override
     public void init(IRegisterFragment view) {
         this.view = view;
+    }
+
+    @Override
+    public void uploadUserPhoto(Bitmap bitmap, CircularImageView circleImageView, String userEMail) {
+        if (userEMail != null){
+            Backendless.Files.Android.upload(bitmap, Bitmap.CompressFormat.PNG, 100, userEMail + "-MainPhoto.png" ,"userPhoto", new AsyncCallback<BackendlessFile>() {
+                @Override
+                public void handleResponse(final BackendlessFile backendlessFile) {
+                    uriPhoto = backendlessFile.getFileURL();
+                    Log.i("response", uriPhoto);
+                    Uri uri = Uri.parse(uriPhoto);
+                    Picasso.with(view.getActivityContext()).load(uri).placeholder(R.drawable.seed_logo).into(circleImageView);
+                }
+
+                @Override
+                public void handleFault(BackendlessFault backendlessFault)
+                {
+                    Toast.makeText(view.getActivityContext(), backendlessFault.toString(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(view.getActivityContext(), "Insert you eMail", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void onRegisterButtonClicked(TextView emailText, TextView nameText, TextView passwordText)
@@ -64,6 +96,7 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
             chatUser.setEmail( email );
             chatUser.setName( name );
             chatUser.setPassword( password );
+            chatUser.setPhoto(uriPhoto);
             Backendless.UserService.register( chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
             {
                 @Override

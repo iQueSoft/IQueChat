@@ -6,6 +6,7 @@ import com.iquesoft.andrew.seedprojectchat.app.SeedProjectChatApp;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.RegisterFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FriendsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.LoginFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.RegisterFragment;
 
@@ -60,6 +61,12 @@ public class SeedProjectChatModule {
     @Singleton
     public ValidateUtil provideValidateUtil(){
         return new ValidateUtil();
+    }
+
+    @Provides
+    @Singleton
+    FriendsFragment provideFriendFragment(){
+        return new FriendsFragment();
     }
 
 }
