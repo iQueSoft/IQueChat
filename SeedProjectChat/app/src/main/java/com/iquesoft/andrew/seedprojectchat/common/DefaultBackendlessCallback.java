@@ -41,6 +41,7 @@ public class DefaultBackendlessCallback<T> extends BackendlessCallback<T> {
     @Override
     public void handleFault( BackendlessFault fault )
     {
+        Log.d("fault", fault.getMessage());
         Toast.makeText( context, fault.getMessage(), Toast.LENGTH_LONG ).show();
     }
 }

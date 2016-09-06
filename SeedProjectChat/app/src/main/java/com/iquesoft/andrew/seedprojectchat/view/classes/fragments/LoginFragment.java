@@ -17,6 +17,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
@@ -24,7 +25,9 @@ import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.di.components.ILoginActivityComponent;
+import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.LoginActivity;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
@@ -45,6 +48,8 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
     LoginFragmentPresenter presenter;
     @Inject
     ValidateUtil validateUtil;
+    @Inject
+    UpdateCurentUser updateCurentUser;
 
     @BindView(R.id.email)
     AutoCompleteTextView mEmailView;
@@ -63,35 +68,7 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivityContext())
-        {
-            @Override
-            public void handleResponse( Boolean isValidLogin )
-            {
-                if( isValidLogin && Backendless.UserService.CurrentUser() == null )
-                {
-                    String currentUserId = Backendless.UserService.loggedInUser();
-
-                    if( !currentUserId.equals( "" ) )
-                    {
-                        Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>( getActivityContext())
-                        {
-                            @Override
-                            public void handleResponse( BackendlessUser currentUser )
-                            {
-                                super.handleResponse( currentUser );
-                                Backendless.UserService.setCurrentUser( currentUser );
-                                startActivity(new Intent(getActivityContext(), MainActivity.class));
-                                showProgress(false);
-                                loginActivity.finish();
-                            }
-                        } );
-                    }
-                }
-
-                super.handleResponse( isValidLogin );
-            }
-        });
+        autoLogin();
     }
 
     @Nullable
@@ -130,6 +107,53 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
     @OnClick(R.id.tv_recovery)
     void recoveryClick(View view){
         showRestorePasswordDialog();
+    }
+
+    @Override
+    public UpdateCurentUser getUpdateCurentUser(){
+        return updateCurentUser;
+    }
+
+    private void autoLogin(){
+        Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivityContext())
+        {
+            @Override
+            public void handleResponse( Boolean isValidLogin )
+            {
+                if( isValidLogin && Backendless.UserService.CurrentUser() == null )
+                {
+                    String currentUserId = Backendless.UserService.loggedInUser();
+
+                    if( !currentUserId.equals( "" ) )
+                    {
+                        Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>( getActivityContext())
+                        {
+                            @Override
+                            public void handleResponse( BackendlessUser currentUser )
+                            {
+                                super.handleResponse( currentUser );
+                                Backendless.UserService.setCurrentUser( currentUser );
+                                String deviceId = Build.SERIAL;
+                                if( deviceId.isEmpty() )
+                                {
+                                    Toast.makeText( getActivity(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
+                                    return;
+                                } else {
+                                    currentUser.setProperty(ChatUser.DEVICEID, deviceId);
+                                    currentUser.setProperty(ChatUser.ONLINE, true);
+                                    updateCurentUser.update(currentUser, getActivity());
+                                }
+                                startActivity(new Intent(getActivityContext(), MainActivity.class));
+                                showProgress(false);
+                                loginActivity.finish();
+                            }
+                        } );
+                    }
+                }
+
+                super.handleResponse( isValidLogin );
+            }
+        });
     }
 
     /**
