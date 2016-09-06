@@ -1,12 +1,15 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
 import android.content.Intent;
+import android.os.Build;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.exceptions.BackendlessFault;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
+import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.ILoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ILoginFragment;
@@ -39,6 +42,17 @@ public class LoginFragmentPresenter implements ILoginFragmentPresenter {
             public void handleResponse( BackendlessUser backendlessUser )
             {
                 super.handleResponse( backendlessUser );
+                String deviceId = Build.SERIAL;
+                if( deviceId.isEmpty() )
+                {
+                    Toast.makeText( view.getActivityContext(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
+                    return;
+                } else {
+                    backendlessUser.setProperty(ChatUser.DEVICEID, deviceId);
+                    backendlessUser.setProperty(ChatUser.ONLINE, true);
+                    view.getUpdateCurentUser().update(backendlessUser, view.getActivityContext());
+                }
+                Log.i("login", backendlessUser.toString());
                 view.getActivityContext().startActivity(new Intent(view.getActivityContext(), MainActivity.class));
                 view.showProgress(false);
                 view.getLoginActivity().finish();
@@ -65,4 +79,5 @@ public class LoginFragmentPresenter implements ILoginFragmentPresenter {
             }
         } );
     }
+
 }

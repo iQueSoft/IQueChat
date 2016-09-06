@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SeedProjectChat</string>
+    <string name="app_name">IQueChat</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -24,4 +24,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_logout">Logout</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -19,7 +19,11 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IRegisterFr
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+
 import javax.inject.Inject;
+
+import id.zelory.compressor.Compressor;
 
 /**
  * Created by Andrew on 17.08.2016.
@@ -43,9 +47,10 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
     }
 
     @Override
-    public void uploadUserPhoto(Bitmap bitmap, CircularImageView circleImageView, String userEMail) {
+    public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail) {
         if (userEMail != null){
-            Backendless.Files.Android.upload(bitmap, Bitmap.CompressFormat.PNG, 100, userEMail + "-MainPhoto.png" ,"userPhoto", new AsyncCallback<BackendlessFile>() {
+            Bitmap compressedImageBitmap = Compressor.getDefault(view.getActivityContext()).compressToBitmap(file);
+            Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png" ,"userPhoto", new AsyncCallback<BackendlessFile>() {
                 @Override
                 public void handleResponse(final BackendlessFile backendlessFile) {
                     uriPhoto = backendlessFile.getFileURL();
