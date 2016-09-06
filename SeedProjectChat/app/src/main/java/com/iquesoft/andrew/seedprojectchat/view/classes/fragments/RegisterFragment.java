@@ -2,10 +2,7 @@ package com.iquesoft.andrew.seedprojectchat.view.classes.fragments;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +18,7 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.activity.LoginActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IRegisterFragment;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.inject.Inject;
@@ -28,6 +26,7 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import id.zelory.compressor.FileUtil;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -58,12 +57,12 @@ public class RegisterFragment extends BaseFragment implements IRegisterFragment 
     static final int GALLERY_REQUEST = 1;
 
     @OnClick(R.id.register_button)
-    void registerButtonClick(View view){
+    void registerButtonClick(View view) {
         presenter.onRegisterButtonClicked(eMailTV, usernameTV, passwordTV);
     }
 
     @OnClick(R.id.cim_photo_view)
-    void choosePhotoClick(){
+    void choosePhotoClick() {
         photoSelector();
     }
 
@@ -107,8 +106,8 @@ public class RegisterFragment extends BaseFragment implements IRegisterFragment 
         return loginActivity;
     }
 
-    public void photoSelector(){
-        if (eMailTV.getText().toString().equals("")){
+    public void photoSelector() {
+        if (eMailTV.getText().toString().equals("")) {
             eMailTV.setError("Insert you eMail");
             eMailTV.requestFocus();
         } else {
@@ -119,21 +118,19 @@ public class RegisterFragment extends BaseFragment implements IRegisterFragment 
     }
 
     @Override
-     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        File image = null;
+        try {
+             image = FileUtil.from(getActivity(), imageReturnedIntent.getData());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        Bitmap bitmap = null;
-
-        switch(requestCode) {
+        switch (requestCode) {
             case GALLERY_REQUEST:
-                if(resultCode == RESULT_OK){
-                    Uri selectedImage = imageReturnedIntent.getData();
-                    try {
-                        bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), selectedImage);
-                        presenter.uploadUserPhoto(bitmap, circleImageView, eMailTV.getText().toString());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                if (resultCode == RESULT_OK) {
+                    presenter.uploadUserPhoto(image, circleImageView, eMailTV.getText().toString());
                 }
         }
     }

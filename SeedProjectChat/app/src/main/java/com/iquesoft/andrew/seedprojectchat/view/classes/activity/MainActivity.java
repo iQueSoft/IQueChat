@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.iquesoft.andrew.seedprojectchat.R;
@@ -26,13 +27,18 @@ import com.iquesoft.andrew.seedprojectchat.di.components.DaggerIMainActivityComp
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.di.components.ISeedProjectChatComponent;
 import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
+import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
-import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FriendsFragment;
+import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
 import javax.inject.Inject;
+
+import butterknife.ButterKnife;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, IMainActivity, IHasComponent<IMainActivityComponent> {
 
@@ -42,7 +48,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     MainActivityPresenter presenter;
 
     @Inject
-    FriendsFragment friendsFragment;
+    FindFriendFragment findFriendFragment;
+
+    @Inject
+    ContainerFriendFragment containerFriendFragment;
+
+    @Inject
+    UpdateCurentUser updateCurentUser;
 
     //@BindView(R.id.header_image_view)
     CircularImageView headerImage;
@@ -60,6 +72,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ButterKnife.bind(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -83,6 +96,25 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     }
 
+    @Override
+    protected void onStop() {
+        BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
+        backendlessUser.setProperty(ChatUser.ONLINE, false);
+        updateCurentUser.update(backendlessUser, this);
+        super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
+        backendlessUser.setProperty(ChatUser.ONLINE, true);
+        updateCurentUser.update(backendlessUser, this);
+        super.onResume();
+    }
+
+    public void setFindFriendFragment() {
+        replaceFragment(findFriendFragment, "findFriendFragment");
+    }
 
     @Override
     public void onBackPressed() {
@@ -116,6 +148,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     startActivity(new Intent(MainActivity.this, LoginActivity.class));
                     finish();
                 }
+
                 public void handleFault(BackendlessFault fault) {
                     // something went wrong and logout failed, to get the error code call fault.getCode()
                 }
@@ -133,10 +166,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         if (id == R.id.nav_friends) {
-            // Handle the camera action
-            replaceFragment(friendsFragment, "friendsFragment");
+            replaceFragment(containerFriendFragment, "containerFriendFragment");
         } else if (id == R.id.nav_gallery) {
-
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
@@ -158,6 +189,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         fragmentTransaction.addToBackStack("backpressed stack");
         fragmentTransaction.commit();
     }
+
 
     @Override
     protected void setupComponent(ISeedProjectChatComponent appComponent) {

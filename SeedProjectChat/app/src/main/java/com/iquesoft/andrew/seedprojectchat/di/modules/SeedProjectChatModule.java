@@ -5,9 +5,15 @@ import android.app.Application;
 import com.iquesoft.andrew.seedprojectchat.app.SeedProjectChatApp;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.RegisterFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.ConvertBackendlessUserToChatUser;
+import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FriendsFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.InviteToFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.LoginFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MyInvateFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.RegisterFragment;
 
 import javax.inject.Singleton;
@@ -67,6 +73,42 @@ public class SeedProjectChatModule {
     @Singleton
     FriendsFragment provideFriendFragment(){
         return new FriendsFragment();
+    }
+
+    @Provides
+    @Singleton
+    FindFriendFragment provideFindFriendFragment(){
+        return new FindFriendFragment();
+    }
+
+    @Provides
+    @Singleton
+    ConvertBackendlessUserToChatUser provideConvertBackendlessUserToChatUser(){
+        return new ConvertBackendlessUserToChatUser();
+    }
+
+    @Provides
+    @Singleton
+    InviteToFriendFragment provideInviteToFriendsFragment(){
+        return new InviteToFriendFragment();
+    }
+
+    @Provides
+    @Singleton
+    ContainerFriendFragment provideContainerFriendFragment(){
+        return new ContainerFriendFragment();
+    }
+
+    @Provides
+    @Singleton
+    MyInvateFragment provideMyInvateFragment(){
+        return new MyInvateFragment();
+    }
+
+    @Provides
+    @Singleton
+    UpdateCurentUser provideUpdateCurentUser(){
+        return new UpdateCurentUser();
     }
 
 }
