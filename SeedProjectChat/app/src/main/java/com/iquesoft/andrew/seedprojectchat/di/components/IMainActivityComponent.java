@@ -3,6 +3,7 @@ package com.iquesoft.andrew.seedprojectchat.di.components;
 import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
 import com.iquesoft.andrew.seedprojectchat.di.scope.ActivityScope;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FriendsFragment;
@@ -26,4 +27,5 @@ public interface IMainActivityComponent {
     void inject(InviteToFriendFragment inviteToFriendFragment);
     void inject(ContainerFriendFragment containerFriendFragment);
     void inject(MyInvateFragment myInvateFragment);
+    void inject(ChatFragment chatFragment);
 }

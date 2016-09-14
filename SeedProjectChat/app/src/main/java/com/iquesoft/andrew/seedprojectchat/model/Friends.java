@@ -7,19 +7,43 @@ import com.backendless.async.callback.AsyncCallback;
 import com.backendless.persistence.BackendlessDataQuery;
 import com.iquesoft.andrew.seedprojectchat.util.Future;
 
-/**
- * Created by andru on 8/31/2016.
- */
-
 public class Friends
 {
+    private java.util.Date updated;
+    private Double serialVersionUID;
+    private String subtopic;
     private Integer status;
+    private String ownerId;
     private java.util.Date created;
     private String objectId;
-    private String ownerId;
-    private java.util.Date updated;
+    private java.util.List<Messages> messages;
     private BackendlessUser user_one;
     private BackendlessUser user_two;
+    public java.util.Date getUpdated()
+    {
+        return updated;
+    }
+
+    public Double getSerialVersionUID()
+    {
+        return serialVersionUID;
+    }
+
+    public void setSerialVersionUID( Double serialVersionUID )
+    {
+        this.serialVersionUID = serialVersionUID;
+    }
+
+    public String getSubtopic()
+    {
+        return subtopic;
+    }
+
+    public void setSubtopic( String subtopic )
+    {
+        this.subtopic = subtopic;
+    }
+
     public Integer getStatus()
     {
         return status;
@@ -28,6 +52,11 @@ public class Friends
     public void setStatus( Integer status )
     {
         this.status = status;
+    }
+
+    public String getOwnerId()
+    {
+        return ownerId;
     }
 
     public java.util.Date getCreated()
@@ -40,14 +69,14 @@ public class Friends
         return objectId;
     }
 
-    public String getOwnerId()
+    public java.util.List<Messages> getMessages()
     {
-        return ownerId;
+        return messages;
     }
 
-    public java.util.Date getUpdated()
+    public void setMessages( java.util.List<Messages> messages )
     {
-        return updated;
+        this.messages = messages;
     }
 
     public BackendlessUser getUser_one()
@@ -196,7 +225,7 @@ public class Friends
         Backendless.Data.of( Friends.class ).findLast( callback );
     }
 
-    public static BackendlessCollection<Friends> find(BackendlessDataQuery query )
+    public static BackendlessCollection<Friends> find( BackendlessDataQuery query )
     {
         return Backendless.Data.of( Friends.class ).find( query );
     }
@@ -219,10 +248,5 @@ public class Friends
     public static void findAsync( BackendlessDataQuery query, AsyncCallback<BackendlessCollection<Friends>> callback )
     {
         Backendless.Data.of( Friends.class ).find( query, callback );
-    }
-
-    public static void findAllAsync(AsyncCallback<BackendlessCollection<Friends>> callback )
-    {
-        Backendless.Data.of( Friends.class ).find(callback);
     }
 }

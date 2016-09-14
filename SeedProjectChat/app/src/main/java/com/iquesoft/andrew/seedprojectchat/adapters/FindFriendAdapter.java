@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,13 @@ import android.widget.TextView;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
+import com.backendless.messaging.DeliveryOptions;
+import com.backendless.messaging.PublishOptions;
+import com.backendless.messaging.PushPolicyEnum;
+import com.backendless.services.messaging.MessageStatus;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultMessages;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.mikhaellopez.circularimageview.CircularImageView;
@@ -59,6 +65,7 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Vi
                 @Override
                 public void handleResponse(Friends response) {
                     super.handleResponse(response);
+                    sendPushNotification(response);
                     remove(position);
                 }
             });
@@ -68,6 +75,28 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Vi
     @Override
     public int getItemCount() {
         return users.size();
+    }
+
+    private void sendPushNotification(Friends friends){
+        PublishOptions publishOptions = new PublishOptions();
+        publishOptions.putHeader( PublishOptions.ANDROID_TICKER_TEXT_TAG, String.format( DefaultMessages.CONNECT_DEMAND, friends.getUser_one().getProperty(ChatUser.NAME)) );
+        publishOptions.putHeader( PublishOptions.ANDROID_CONTENT_TITLE_TAG, context.getResources().getString( R.string.app_name ) );
+        publishOptions.putHeader( PublishOptions.ANDROID_CONTENT_TEXT_TAG, String.format( DefaultMessages.CONNECT_DEMAND, friends.getUser_one().getProperty(ChatUser.NAME) ) );
+        DeliveryOptions deliveryOptions = new DeliveryOptions();
+        deliveryOptions.setPushPolicy( PushPolicyEnum.ONLY );
+        deliveryOptions.addPushSinglecast(friends.getUser_two().getProperty(ChatUser.DEVICEID).toString());
+
+        final String message_subtopic = friends.getUser_one().getProperty(ChatUser.NAME).toString().concat( "_with_" ).concat(friends.getUser_two().getProperty(ChatUser.NAME).toString());
+
+        Backendless.Messaging.publish( message_subtopic, publishOptions, deliveryOptions, new DefaultBackendlessCallback<MessageStatus>(context)
+        {
+            @Override
+            public void handleResponse( MessageStatus response )
+            {
+                super.handleResponse( response );
+                Log.i("sendPush", response.getStatus().toString());
+            }
+        } );
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{

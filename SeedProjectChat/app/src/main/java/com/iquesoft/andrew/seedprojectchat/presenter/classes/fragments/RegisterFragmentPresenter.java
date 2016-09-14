@@ -48,26 +48,29 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
 
     @Override
     public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail) {
-        if (userEMail != null){
-            Bitmap compressedImageBitmap = Compressor.getDefault(view.getActivityContext()).compressToBitmap(file);
-            Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png" ,"userPhoto", new AsyncCallback<BackendlessFile>() {
-                @Override
-                public void handleResponse(final BackendlessFile backendlessFile) {
-                    uriPhoto = backendlessFile.getFileURL();
-                    Log.i("response", uriPhoto);
-                    Uri uri = Uri.parse(uriPhoto);
-                    Picasso.with(view.getActivityContext()).load(uri).placeholder(R.drawable.seed_logo).into(circleImageView);
-                }
+        Thread uploadPhotoThread = new Thread(() -> {
+            if (userEMail != null){
+                Bitmap compressedImageBitmap = Compressor.getDefault(view.getActivityContext()).compressToBitmap(file);
+                Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png" ,"userPhoto", new AsyncCallback<BackendlessFile>() {
+                    @Override
+                    public void handleResponse(final BackendlessFile backendlessFile) {
+                        uriPhoto = backendlessFile.getFileURL();
+                        Log.i("response", uriPhoto);
+                        Uri uri = Uri.parse(uriPhoto);
+                        Picasso.with(view.getActivityContext()).load(uri).placeholder(R.drawable.seed_logo).into(circleImageView);
+                    }
 
-                @Override
-                public void handleFault(BackendlessFault backendlessFault)
-                {
-                    Toast.makeText(view.getActivityContext(), backendlessFault.toString(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            Toast.makeText(view.getActivityContext(), "Insert you eMail", Toast.LENGTH_LONG).show();
-        }
+                    @Override
+                    public void handleFault(BackendlessFault backendlessFault)
+                    {
+                        Toast.makeText(view.getActivityContext(), backendlessFault.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(view.getActivityContext(), "Insert you eMail", Toast.LENGTH_LONG).show();
+            }
+        });
+        uploadPhotoThread.start();
     }
 
     public void onRegisterButtonClicked(TextView emailText, TextView nameText, TextView passwordText)
@@ -102,17 +105,20 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
             chatUser.setName( name );
             chatUser.setPassword( password );
             chatUser.setPhoto(uriPhoto);
-            Backendless.UserService.register( chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
-            {
-                @Override
-                public void handleResponse( BackendlessUser response )
+            Thread registerThread = new Thread(() -> {
+                Backendless.UserService.register( chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
                 {
-                    super.handleResponse( response );
-                    Log.i("response", response.toString());
-                    showToast("You sucsesfull registred");
-                    view.getLoginActivity().setLoginFragment();
-                }
+                    @Override
+                    public void handleResponse( BackendlessUser response )
+                    {
+                        super.handleResponse( response );
+                        Log.i("response", response.toString());
+                        showToast("You sucsesfull registred");
+                        view.getLoginActivity().setLoginFragment();
+                    }
+                });
             });
+            registerThread.start();
         }
 
     }

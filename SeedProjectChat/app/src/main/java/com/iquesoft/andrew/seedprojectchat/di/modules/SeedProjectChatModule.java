@@ -8,6 +8,7 @@ import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.RegisterF
 import com.iquesoft.andrew.seedprojectchat.util.ConvertBackendlessUserToChatUser;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FriendsFragment;
@@ -109,6 +110,12 @@ public class SeedProjectChatModule {
     @Singleton
     UpdateCurentUser provideUpdateCurentUser(){
         return new UpdateCurentUser();
+    }
+
+    @Provides
+    @Singleton
+    ChatFragment provideChatFragment(){
+        return new ChatFragment();
     }
 
 }

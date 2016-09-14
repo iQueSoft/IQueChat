@@ -51,18 +51,21 @@ public class FriendsFragmentPresenter implements IFriendsFragmentPresenter {
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
         dataQuery.setWhereClause( whereClause );
         usersObservable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
-        Backendless.Data.of(BackendlessUser.class).find(new DefaultBackendlessCallback<BackendlessCollection<BackendlessUser>>(view.getActivityContext()) {
-            @Override
-            public void handleResponse(BackendlessCollection<BackendlessUser> response) {
-                super.handleResponse(response);
-                usersObservable.onNext(response);
-            }
+        Thread backendlessUsersThread = new Thread(() -> {
+            Backendless.Data.of(BackendlessUser.class).find(new DefaultBackendlessCallback<BackendlessCollection<BackendlessUser>>(view.getActivityContext()) {
+                @Override
+                public void handleResponse(BackendlessCollection<BackendlessUser> response) {
+                    super.handleResponse(response);
+                    usersObservable.onNext(response);
+                }
 
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                super.handleFault(fault);
-            }
+                @Override
+                public void handleFault(BackendlessFault fault) {
+                    super.handleFault(fault);
+                }
+            });
         });
+        backendlessUsersThread.start();
         return usersObservable;
     }
 
@@ -77,14 +80,17 @@ public class FriendsFragmentPresenter implements IFriendsFragmentPresenter {
         whereClause.append("status = '2'");
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
         dataQuery.setWhereClause( whereClause.toString() );
-        Friends.findAsync(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<Friends>>(view.getActivityContext()){
-            @Override
-            public void handleResponse(BackendlessCollection<Friends> response) {
-                super.handleResponse(response);
-                Log.i("friend", response.getData().toString());
-                friendsObservable.onNext(response.getData());
-            }
+        Thread friendsThread = new Thread(() -> {
+            Friends.findAsync(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<Friends>>(view.getActivityContext()){
+                @Override
+                public void handleResponse(BackendlessCollection<Friends> response) {
+                    super.handleResponse(response);
+                    Log.i("friend", response.getData().toString());
+                    friendsObservable.onNext(response.getData());
+                }
+            });
         });
+        friendsThread.start();
         return friendsObservable;
     }
 }
