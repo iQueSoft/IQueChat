@@ -31,6 +31,8 @@ import butterknife.OnClick;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 
 /**
@@ -79,7 +81,7 @@ public class FriendsFragment extends BaseFragment implements IFriendsFragment {
     public void onResume() {
         super.onResume();
         presenter.init(this);
-        userSubscription = presenter.getCurentFriendList().subscribe(chatUsers -> {
+        userSubscription = presenter.getCurentFriendList().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(chatUsers -> {
             Log.i("mySubscript", chatUsers.toString());
             setUserAdapter(chatUsers);
         });

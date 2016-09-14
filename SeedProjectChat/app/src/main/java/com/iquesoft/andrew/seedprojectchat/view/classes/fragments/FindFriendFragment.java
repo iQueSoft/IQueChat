@@ -29,6 +29,8 @@ import butterknife.OnClick;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by andrew on 8/31/2016.
@@ -58,7 +60,7 @@ public class FindFriendFragment extends BaseFragment implements IFindFriendFragm
     @OnClick(R.id.btn_find_users)
     public void findClick(View view) {
         getFriendsSubscription = friendsFragment.getCurentFriendList().subscribe(response ->{
-            presenter.getBackendlessUsers(username.getText().toString(), response).subscribe(this::setUserAdapter);
+            presenter.getBackendlessUsers(username.getText().toString(), response).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(this::setUserAdapter);
         });
     }
 

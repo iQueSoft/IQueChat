@@ -53,9 +53,16 @@ public class InvateToFriendFragmentAdapter extends RecyclerView.Adapter<InvateTo
 
         holder.accept.setOnClickListener(view -> {
             curentFriend.setStatus(2);
-            curentFriend.saveAsync(new DefaultBackendlessCallback<Friends>(context));
+            curentFriend.setSubtopic(curentFriend.getUser_one().getProperty(ChatUser.NAME) + "_with_" + curentFriend.getUser_two().getProperty(ChatUser.NAME));
+            curentFriend.saveAsync(new DefaultBackendlessCallback<Friends>(context){
+                @Override
+                public void handleResponse(Friends response) {
+                    super.handleResponse(response);
+                    remove(position);
+                }
+            });
         });
-        holder.denial.setOnClickListener(view -> curentFriend.removeAsync(new DefaultBackendlessCallback<Long>(context)));
+        holder.denial.setOnClickListener(view -> removeFromBackendless(position));
     }
 
     @Override
@@ -79,5 +86,29 @@ public class InvateToFriendFragmentAdapter extends RecyclerView.Adapter<InvateTo
             tvUserEMail = (TextView) itemView.findViewById(R.id.tv_user_email);
             tvUserName = (TextView) itemView.findViewById(R.id.tv_username);
         }
+    }
+
+    // Insert a new item to the RecyclerView
+    public void insert(Friends friends, int position) {
+        users.add(position, friends);
+        notifyItemInserted(position);
+    }
+
+    // Remove a RecyclerView item containing the Data object
+    public void remove(int index) {
+        users.remove(index);
+        notifyItemRemoved(index);
+    }
+
+    public void removeFromBackendless(int index){
+        Friends friends = users.get(index);
+        friends.removeAsync(new DefaultBackendlessCallback<Long>(context){
+            @Override
+            public void handleResponse(Long response) {
+                super.handleResponse(response);
+                users.remove(index);
+                notifyItemRemoved(index);
+            }
+        });
     }
 }

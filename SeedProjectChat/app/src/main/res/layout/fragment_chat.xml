@@ -1,0 +1,56 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/chatSendButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:background="@android:color/holo_blue_light"
+            android:text="Send MSG"
+            android:textColor="@color/background_material_light"
+            android:elevation="8dp" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/messagesContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_marginTop="5dp"
+            android:listSelector="@android:color/transparent"
+            android:transcriptMode="alwaysScroll"
+            android:divider="@null"
+            android:layout_above="@+id/chatSendButton" />
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/messageEditContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/chatSendButton"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/chatSendButton">
+
+            <EditText
+                android:id="@+id/messageEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/type_message"
+                android:textSize="18sp"
+                android:typeface="serif"
+                android:fontFamily="sans-serif" />
+        </android.support.design.widget.TextInputLayout>
+
+
+    </RelativeLayout>
+
+</RelativeLayout>
