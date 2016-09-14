@@ -115,45 +115,51 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
     }
 
     private void autoLogin(){
-        Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivityContext())
-        {
-            @Override
-            public void handleResponse( Boolean isValidLogin )
+        Thread autoLoginThread = new Thread(() -> {
+            Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivityContext())
             {
-                if( isValidLogin && Backendless.UserService.CurrentUser() == null )
+                @Override
+                public void handleResponse( Boolean isValidLogin )
                 {
-                    String currentUserId = Backendless.UserService.loggedInUser();
-
-                    if( !currentUserId.equals( "" ) )
+                    if( isValidLogin && Backendless.UserService.CurrentUser() == null )
                     {
-                        Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>( getActivityContext())
-                        {
-                            @Override
-                            public void handleResponse( BackendlessUser currentUser )
-                            {
-                                super.handleResponse( currentUser );
-                                Backendless.UserService.setCurrentUser( currentUser );
-                                String deviceId = Build.SERIAL;
-                                if( deviceId.isEmpty() )
-                                {
-                                    Toast.makeText( getActivity(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
-                                    return;
-                                } else {
-                                    currentUser.setProperty(ChatUser.DEVICEID, deviceId);
-                                    currentUser.setProperty(ChatUser.ONLINE, true);
-                                    updateCurentUser.update(currentUser, getActivity());
-                                }
-                                startActivity(new Intent(getActivityContext(), MainActivity.class));
-                                showProgress(false);
-                                loginActivity.finish();
-                            }
-                        } );
-                    }
-                }
+                        String currentUserId = Backendless.UserService.loggedInUser();
 
-                super.handleResponse( isValidLogin );
-            }
+                        if( !currentUserId.equals( "" ) )
+                        {
+                            Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>( getActivityContext())
+                            {
+                                @Override
+                                public void handleResponse( BackendlessUser currentUser )
+                                {
+                                    super.handleResponse( currentUser );
+                                    Thread thread = new Thread(()->{
+                                        Backendless.UserService.setCurrentUser( currentUser );
+                                        String deviceId = Build.SERIAL;
+                                        if( deviceId.isEmpty() )
+                                        {
+                                            Toast.makeText( getActivity(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
+                                            return;
+                                        } else {
+                                            currentUser.setProperty(ChatUser.DEVICEID, deviceId);
+                                            currentUser.setProperty(ChatUser.ONLINE, true);
+                                            updateCurentUser.update(currentUser, getActivity());
+                                        }
+                                    });
+                                    thread.start();
+                                    startActivity(new Intent(getActivityContext(), MainActivity.class));
+                                    showProgress(false);
+                                    loginActivity.finish();
+                                }
+                            } );
+                        }
+                    }
+
+                    super.handleResponse( isValidLogin );
+                }
+            });
         });
+        autoLoginThread.start();
     }
 
     /**

@@ -36,48 +36,56 @@ public class LoginFragmentPresenter implements ILoginFragmentPresenter {
     @Override
     public void onLoginButtonClicked(String userEMail, String password, boolean rememberLogin)
     {
-
-        Backendless.UserService.login( userEMail, password, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
-        {
-            public void handleResponse( BackendlessUser backendlessUser )
+        Thread loginThread = new Thread(() -> {
+            Backendless.UserService.login( userEMail, password, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
             {
-                super.handleResponse( backendlessUser );
-                String deviceId = Build.SERIAL;
-                if( deviceId.isEmpty() )
+                public void handleResponse( BackendlessUser backendlessUser )
                 {
-                    Toast.makeText( view.getActivityContext(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
-                    return;
-                } else {
-                    backendlessUser.setProperty(ChatUser.DEVICEID, deviceId);
-                    backendlessUser.setProperty(ChatUser.ONLINE, true);
-                    view.getUpdateCurentUser().update(backendlessUser, view.getActivityContext());
+                    super.handleResponse( backendlessUser );
+                    Thread thread = new Thread(()->{
+                        String deviceId = Build.SERIAL;
+                        if( deviceId.isEmpty() )
+                        {
+                            Toast.makeText( view.getActivityContext(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
+                            return;
+                        } else {
+                            backendlessUser.setProperty(ChatUser.DEVICEID, deviceId);
+                            backendlessUser.setProperty(ChatUser.ONLINE, true);
+                            view.getUpdateCurentUser().update(backendlessUser, view.getActivityContext());
+                        }
+                    });
+                    thread.start();
+                    Log.i("login", backendlessUser.toString());
+                    view.getActivityContext().startActivity(new Intent(view.getActivityContext(), MainActivity.class));
+                    view.showProgress(false);
+                    view.getLoginActivity().finish();
                 }
-                Log.i("login", backendlessUser.toString());
-                view.getActivityContext().startActivity(new Intent(view.getActivityContext(), MainActivity.class));
-                view.showProgress(false);
-                view.getLoginActivity().finish();
-            }
 
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                super.handleFault(fault);
-                view.showProgress(false);
-            }
-        }, rememberLogin );
+                @Override
+                public void handleFault(BackendlessFault fault) {
+                    super.handleFault(fault);
+                    view.showProgress(false);
+                }
+            }, rememberLogin );
+        });
+        loginThread.start();
     }
 
     @Override
     public void onRestorePasswordButtonClicked(String eMail)
     {
-        Backendless.UserService.restorePassword( eMail, new DefaultBackendlessCallback<Void>(view.getActivityContext())
-        {
-            @Override
-            public void handleResponse( Void response )
+        Thread restorePasswordThread = new Thread(() -> {
+            Backendless.UserService.restorePassword( eMail, new DefaultBackendlessCallback<Void>(view.getActivityContext())
             {
-                super.handleResponse( response );
-                Toast.makeText(view.getActivityContext(), "Please check you eMail", Toast.LENGTH_LONG).show();
-            }
-        } );
+                @Override
+                public void handleResponse( Void response )
+                {
+                    super.handleResponse( response );
+                    Toast.makeText(view.getActivityContext(), "Please check you eMail", Toast.LENGTH_LONG).show();
+                }
+            } );
+        });
+        restorePasswordThread.start();
     }
 
 }

@@ -45,14 +45,17 @@ public class MyInviteFragmentPresenter implements IMyInviteFragmentPresenter {
         whereClause.append("status = '1'");
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
         dataQuery.setWhereClause( whereClause.toString() );
-        Friends.findAsync(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<Friends>>(view.getActivityContext()){
-            @Override
-            public void handleResponse(BackendlessCollection<Friends> response) {
-                super.handleResponse(response);
-                Log.i("friend", response.getData().toString());
-                myInviteFriendsBS.onNext(response.getData());
-            }
+        Thread myInviteFriendsListThread = new Thread(() -> {
+            Friends.findAsync(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<Friends>>(view.getActivityContext()){
+                @Override
+                public void handleResponse(BackendlessCollection<Friends> response) {
+                    super.handleResponse(response);
+                    Log.i("friend", response.getData().toString());
+                    myInviteFriendsBS.onNext(response.getData());
+                }
+            });
         });
+        myInviteFriendsListThread.start();
         return myInviteFriendsBS;
     }
 

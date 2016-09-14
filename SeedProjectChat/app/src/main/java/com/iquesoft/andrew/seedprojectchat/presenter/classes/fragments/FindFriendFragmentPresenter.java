@@ -18,8 +18,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
 /**
@@ -44,7 +42,6 @@ public class FindFriendFragmentPresenter implements IFindFriendFragmentPresenter
     @Override
     public PublishSubject<List<BackendlessUser>> getBackendlessUsers(String username, List<Friends> friendsList) {
         usersObservable = PublishSubject.create();
-        usersObservable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
         StringBuilder usernamequery = new StringBuilder();
         usernamequery.append("name LIKE");
         usernamequery.append("'%" + username + "%'");
@@ -53,38 +50,41 @@ public class FindFriendFragmentPresenter implements IFindFriendFragmentPresenter
         usernamequery.append("'%" + username + "%'");
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
         dataQuery.setWhereClause( usernamequery.toString() );
-        Backendless.Data.of(BackendlessUser.class).find(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<BackendlessUser>>(view.getActivityContext()) {
-            @Override
-            public void handleResponse(BackendlessCollection<BackendlessUser> response) {
-                super.handleResponse(response);
-                usersObservable.onNext(response.getData());
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                super.handleFault(fault);
-            }
-        });
         ArrayList<BackendlessUser> users = new ArrayList<>();
         PublishSubject<List<BackendlessUser>> usersObs = PublishSubject.create();
-        if (friendsList.size() != 0){
-            usersObservable.flatMap(Observable::from)
-                    .filter(response -> !response.getObjectId().equals(Backendless.UserService.CurrentUser().getProperty("objectId")))
-                    .skipWhile(response -> check(response, friendsList))
-                    .subscribe(user->{
-                        Log.i("user", user.toString());
-                        users.add(user);
-                        usersObs.onNext(users);
-                    });
-        } else {
-            usersObservable.flatMap(Observable::from)
-                    .filter(response -> !response.getObjectId().equals(Backendless.UserService.CurrentUser().getProperty("objectId")))
-                    .subscribe(user->{
-                        Log.i("user", user.toString());
-                        users.add(user);
-                        usersObs.onNext(users);
-                    });
-        }
+        Thread findPersonThread = new Thread(() -> {
+            Backendless.Data.of(BackendlessUser.class).find(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<BackendlessUser>>(view.getActivityContext()) {
+                @Override
+                public void handleResponse(BackendlessCollection<BackendlessUser> response) {
+                    super.handleResponse(response);
+                    usersObservable.onNext(response.getData());
+                }
+
+                @Override
+                public void handleFault(BackendlessFault fault) {
+                    super.handleFault(fault);
+                }
+            });
+            if (friendsList.size() != 0){
+                usersObservable.flatMap(Observable::from)
+                        .filter(response -> !response.getObjectId().equals(Backendless.UserService.CurrentUser().getProperty("objectId")))
+                        .skipWhile(response -> check(response, friendsList))
+                        .subscribe(user->{
+                            Log.i("user", user.toString());
+                            users.add(user);
+                            usersObs.onNext(users);
+                        });
+            } else {
+                usersObservable.flatMap(Observable::from)
+                        .filter(response -> !response.getObjectId().equals(Backendless.UserService.CurrentUser().getProperty("objectId")))
+                        .subscribe(user->{
+                            Log.i("user", user.toString());
+                            users.add(user);
+                            usersObs.onNext(users);
+                        });
+            }
+        });
+        findPersonThread.start();
         return usersObs;
     }
 

@@ -26,6 +26,8 @@ import butterknife.ButterKnife;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by andru on 9/1/2016.
@@ -64,7 +66,13 @@ public class InviteToFriendFragment extends BaseFragment implements IInviteToFri
     public void onResume() {
         super.onResume();
         presenter.init(this);
-        friendsSubscription = presenter.getCurentFriendList().subscribe(this::setUserAdapter);
+        friendsSubscription = presenter.getCurentFriendList().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(this::setUserAdapter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        friendsSubscription.unsubscribe();
     }
 
     private void setUserAdapter(List<Friends> users) {

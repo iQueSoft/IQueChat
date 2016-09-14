@@ -46,14 +46,17 @@ public class InviteToFriendFragmentPresenter implements IInviteToFriendFragmentP
         whereClause.append("status = '1'");
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
         dataQuery.setWhereClause( whereClause.toString() );
-        Friends.findAsync(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<Friends>>(view.getActivityContext()){
-            @Override
-            public void handleResponse(BackendlessCollection<Friends> response) {
-                super.handleResponse(response);
-                Log.i("friend", response.getData().toString());
-                friendsObservable.onNext(response.getData());
-            }
+        Thread getFriendListThread = new Thread(() -> {
+            Friends.findAsync(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<Friends>>(view.getActivityContext()){
+                @Override
+                public void handleResponse(BackendlessCollection<Friends> response) {
+                    super.handleResponse(response);
+                    Log.i("friend", response.getData().toString());
+                    friendsObservable.onNext(response.getData());
+                }
+            });
         });
+        getFriendListThread.start();
         return friendsObservable;
     }
 }

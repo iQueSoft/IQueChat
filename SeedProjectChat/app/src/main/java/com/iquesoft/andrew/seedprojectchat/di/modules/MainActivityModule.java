@@ -1,6 +1,7 @@
 package com.iquesoft.andrew.seedprojectchat.di.modules;
 
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.ChatFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FindFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FriendsFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.InviteToFriendFragmentPresenter;
@@ -50,5 +51,10 @@ public class MainActivityModule {
     @Provides
     MyInviteFragmentPresenter provideMyInviteFragmentPresenter(){
         return new MyInviteFragmentPresenter();
+    }
+
+    @Provides
+    ChatFragmentPresenter provideChatFragmentPresenter(){
+        return new ChatFragmentPresenter();
     }
 }
