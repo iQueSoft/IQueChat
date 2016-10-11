@@ -36,6 +36,7 @@
             android:name=".view.classes.activity.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme" />
+
         <receiver
             android:name=".receiver.PushReceiver"
             android:permission="com.google.android.c2dm.permission.SEND">
@@ -46,11 +47,15 @@
                 <category android:name="com.iquesoft.andrew.seedprojectchat" />
             </intent-filter>
         </receiver>
-        <service android:name=".services.PushServices"
+
+        <service
+            android:name=".services.PushServices"
             android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
-            <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-        </intent-filter></service>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>

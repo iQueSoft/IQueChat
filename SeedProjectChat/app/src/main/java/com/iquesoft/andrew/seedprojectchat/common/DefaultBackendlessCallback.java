@@ -2,7 +2,6 @@ package com.iquesoft.andrew.seedprojectchat.common;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
@@ -42,6 +41,5 @@ public class DefaultBackendlessCallback<T> extends BackendlessCallback<T> {
     public void handleFault( BackendlessFault fault )
     {
         Log.d("fault", fault.getMessage());
-        Toast.makeText( context, fault.getMessage(), Toast.LENGTH_LONG ).show();
     }
 }
