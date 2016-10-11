@@ -2,17 +2,17 @@ package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
 import android.util.Log;
 
+import com.arellomobile.mvp.InjectViewState;
+import com.arellomobile.mvp.MvpPresenter;
 import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
+import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.persistence.BackendlessDataQuery;
-import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IInviteToFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IInviteToFriendFragment;
 
 import java.util.List;
-
-import javax.inject.Inject;
 
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -21,36 +21,28 @@ import rx.subjects.BehaviorSubject;
 /**
  * Created by andru on 9/1/2016.
  */
-
-public class InviteToFriendFragmentPresenter implements IInviteToFriendFragmentPresenter {
-
-    private IInviteToFriendFragment view;
-    private BehaviorSubject<List<Friends>> friendsObservable;
-
-    @Inject
-    public InviteToFriendFragmentPresenter(){
-
-    }
+@InjectViewState
+public class InviteToFriendFragmentPresenter extends MvpPresenter<IInviteToFriendFragment> implements IInviteToFriendFragmentPresenter {
 
     @Override
-    public void init(IInviteToFriendFragment view) {
-        this.view = view;
+    protected void onFirstViewAttach() {
+        super.onFirstViewAttach();
+        getCurentFriendList().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(response -> getViewState().setUserAdapter(response));
     }
 
-    public BehaviorSubject<List<Friends>> getCurentFriendList(){
+    private BehaviorSubject<List<Friends>> getCurentFriendList(){
+        BehaviorSubject<List<Friends>> friendsObservable;
         friendsObservable = BehaviorSubject.create();
         friendsObservable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
-        StringBuilder whereClause = new StringBuilder();
-        whereClause.append( "user_two.objectId='" ).append( Backendless.UserService.CurrentUser().getProperty("objectId")).append( "'" );
-        whereClause.append(" and ");
-        whereClause.append("status = '1'");
+        String whereClause = "user_two.objectId='" + Backendless.UserService.CurrentUser().getProperty("objectId") + "'" +
+                " and " +
+                "status = '1'";
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
-        dataQuery.setWhereClause( whereClause.toString() );
+        dataQuery.setWhereClause(whereClause);
         Thread getFriendListThread = new Thread(() -> {
-            Friends.findAsync(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<Friends>>(view.getActivityContext()){
+            Friends.findAsync(dataQuery, new BackendlessCallback<BackendlessCollection<Friends>>(){
                 @Override
                 public void handleResponse(BackendlessCollection<Friends> response) {
-                    super.handleResponse(response);
                     Log.i("friend", response.getData().toString());
                     friendsObservable.onNext(response.getData());
                 }

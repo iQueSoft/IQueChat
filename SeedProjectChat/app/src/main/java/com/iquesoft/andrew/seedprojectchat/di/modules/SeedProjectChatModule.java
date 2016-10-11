@@ -3,15 +3,18 @@ package com.iquesoft.andrew.seedprojectchat.di.modules;
 import android.app.Application;
 
 import com.iquesoft.andrew.seedprojectchat.app.SeedProjectChatApp;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.ChatWithFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.RegisterFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.ConvertBackendlessUserToChatUser;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
-import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatWithFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FriendsFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatContainer;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.InviteToFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.LoginFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MyInvateFragment;
@@ -114,8 +117,26 @@ public class SeedProjectChatModule {
 
     @Provides
     @Singleton
-    ChatFragment provideChatFragment(){
-        return new ChatFragment();
+    ChatWithFriendFragment provideChatWithFriendFragment(){
+        return new ChatWithFriendFragment();
+    }
+
+    @Provides
+    @Singleton
+    GroupChatContainer provideGroupChatContainer(){
+        return new GroupChatContainer();
+    }
+
+    @Provides
+    @Singleton
+    GroupChatFragment provideGroupChatFragment(){
+        return new GroupChatFragment();
+    }
+
+    @Provides
+    @Singleton
+    ChatWithFriendFragmentPresenter provideChatWithFriendFragmentPresenter(){
+        return new ChatWithFriendFragmentPresenter();
     }
 
 }

@@ -5,9 +5,9 @@ import android.util.Log;
 import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
 import com.backendless.BackendlessUser;
+import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.BackendlessDataQuery;
-import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IFindFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IFindFriendFragment;
@@ -53,10 +53,9 @@ public class FindFriendFragmentPresenter implements IFindFriendFragmentPresenter
         ArrayList<BackendlessUser> users = new ArrayList<>();
         PublishSubject<List<BackendlessUser>> usersObs = PublishSubject.create();
         Thread findPersonThread = new Thread(() -> {
-            Backendless.Data.of(BackendlessUser.class).find(dataQuery, new DefaultBackendlessCallback<BackendlessCollection<BackendlessUser>>(view.getActivityContext()) {
+            Backendless.Data.of(BackendlessUser.class).find(dataQuery, new BackendlessCallback<BackendlessCollection<BackendlessUser>>() {
                 @Override
                 public void handleResponse(BackendlessCollection<BackendlessUser> response) {
-                    super.handleResponse(response);
                     usersObservable.onNext(response.getData());
                 }
 

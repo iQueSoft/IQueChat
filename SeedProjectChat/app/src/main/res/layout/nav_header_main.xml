@@ -23,11 +23,11 @@
         app:civ_shadow="true"
         app:civ_shadow_radius="10"
         app:civ_shadow_color="#8BC34A"
-        android:layout_above="@+id/tv_user_email"
+        android:layout_above="@+id/tv_last_message"
         android:layout_alignParentEnd="true" />
 
     <TextView
-        android:id="@+id/tv_user_email"
+        android:id="@+id/tv_last_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="android.studio@android.com"
@@ -44,7 +44,7 @@
         android:text="Android Studio"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:singleLine="true"
-        android:layout_above="@+id/tv_user_email"
+        android:layout_above="@+id/tv_last_message"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/header_image_view" />
 

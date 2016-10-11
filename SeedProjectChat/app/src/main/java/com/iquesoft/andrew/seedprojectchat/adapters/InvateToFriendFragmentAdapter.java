@@ -83,8 +83,8 @@ public class InvateToFriendFragmentAdapter extends RecyclerView.Adapter<InvateTo
             accept = (Button) itemView.findViewById(R.id.btn_accept_invite);
             denial = (Button) itemView.findViewById(R.id.btn_accept_denial);
             cimUserImage = (CircularImageView) itemView.findViewById(R.id.cim_user_image);
-            tvUserEMail = (TextView) itemView.findViewById(R.id.tv_user_email);
-            tvUserName = (TextView) itemView.findViewById(R.id.tv_username);
+            tvUserEMail = (TextView) itemView.findViewById(R.id.tv_last_message);
+            tvUserName = (TextView) itemView.findViewById(R.id.tv_group_chat_name);
         }
     }
 

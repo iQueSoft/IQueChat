@@ -19,19 +19,25 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import io.huannguyen.swipetodeleterv.STDAdapter;
+
 /**
  * Created by andru on 8/30/2016.
  */
 
-public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHolder> {
+public class UserListAdapter extends STDAdapter<Friends> {
 
     private List<Friends> friendses;
     private Context context;
 
+
+
     public UserListAdapter(List<Friends> users, Context context){
+        super(users);
         this.context = context;
         this.friendses = users;
     }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_friends_row, parent, false);
@@ -39,7 +45,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         BackendlessUser user;
         if (Backendless.UserService.CurrentUser().getObjectId().equals(friendses.get(position).getUser_one().getObjectId())){
             user = friendses.get(position).getUser_two();
@@ -48,12 +54,18 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
         }
         if (user.getProperty(ChatUser.PHOTO) != null){
             Uri uri = Uri.parse(user.getProperty(ChatUser.PHOTO).toString());
-            Picasso.with(context).load(uri).fit().placeholder(R.drawable.seed_logo).into(holder.cimUserImage);
+            Picasso.with(context).load(uri).fit().placeholder(R.drawable.seed_logo).into(((UserListAdapter.ViewHolder) holder).cimUserImage);
         }
         if (user.getProperty(ChatUser.NAME) != null){
-            holder.tvUserName.setText(user.getProperty(ChatUser.NAME).toString());
+            ((UserListAdapter.ViewHolder) holder).tvUserName.setText(user.getProperty(ChatUser.NAME).toString());
         }
-        holder.tvUserEMail.setText(user.getEmail());
+        Boolean online = (Boolean) user.getProperty(ChatUser.ONLINE);
+        if (online){
+            ((UserListAdapter.ViewHolder) holder).isOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.online));
+        } else {
+            ((UserListAdapter.ViewHolder) holder).isOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.offline));
+        }
+        ((UserListAdapter.ViewHolder) holder).tvUserEMail.setText(user.getEmail());
     }
 
     @Override
@@ -64,14 +76,16 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     class ViewHolder extends RecyclerView.ViewHolder{
 
         CircularImageView cimUserImage;
+        CircularImageView isOnline;
         TextView tvUserName;
         TextView tvUserEMail;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            isOnline = (CircularImageView) itemView.findViewById(R.id.cim_online);
             cimUserImage = (CircularImageView) itemView.findViewById(R.id.cim_user_image);
-            tvUserEMail = (TextView) itemView.findViewById(R.id.tv_user_email);
-            tvUserName = (TextView) itemView.findViewById(R.id.tv_username);
+            tvUserEMail = (TextView) itemView.findViewById(R.id.tv_last_message);
+            tvUserName = (TextView) itemView.findViewById(R.id.tv_group_chat_name);
         }
     }
 
@@ -97,5 +111,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
                 notifyItemRemoved(index);
             }
         });
+    }
+
+    public Friends getCurentFriend(int position){
+        return friendses.get(position);
     }
 }
