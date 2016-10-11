@@ -23,13 +23,11 @@ public class PushServices extends BackendlessPushService
     @Override
     public void onRegistered(Context context, String registrationId )
     {
-        Toast.makeText( context, "device registered" + registrationId, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onUnregistered( Context context, Boolean unregistered )
     {
-        Toast.makeText( context, "device unregistered", Toast.LENGTH_SHORT).show();
     }
 
     @Override

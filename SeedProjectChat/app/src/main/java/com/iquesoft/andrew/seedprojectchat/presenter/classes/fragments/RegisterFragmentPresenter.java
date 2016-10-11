@@ -37,7 +37,7 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
 
 
     @Inject
-    public RegisterFragmentPresenter(){
+    public RegisterFragmentPresenter() {
 
     }
 
@@ -49,9 +49,9 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
     @Override
     public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail) {
         Thread uploadPhotoThread = new Thread(() -> {
-            if (userEMail != null){
+            if (userEMail != null) {
                 Bitmap compressedImageBitmap = Compressor.getDefault(view.getActivityContext()).compressToBitmap(file);
-                Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png" ,"userPhoto", new AsyncCallback<BackendlessFile>() {
+                Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
                     @Override
                     public void handleResponse(final BackendlessFile backendlessFile) {
                         uriPhoto = backendlessFile.getFileURL();
@@ -61,8 +61,7 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
                     }
 
                     @Override
-                    public void handleFault(BackendlessFault backendlessFault)
-                    {
+                    public void handleFault(BackendlessFault backendlessFault) {
                         Toast.makeText(view.getActivityContext(), backendlessFault.toString(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -73,58 +72,52 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
         uploadPhotoThread.start();
     }
 
-    public void onRegisterButtonClicked(TextView emailText, TextView nameText, TextView passwordText)
-    {
+    public void onRegisterButtonClicked(TextView emailText, TextView nameText, TextView passwordText) {
         String email = null, name = null, password = null;
 
-        if( !emailText.getText().toString().isEmpty() & view.getValidateUtil().isEmailValid(emailText.getText().toString()) )
-        {
+        if (!emailText.getText().toString().isEmpty() & view.getValidateUtil().isEmailValid(emailText.getText().toString())) {
             email = emailText.getText().toString();
         } else {
             emailText.setError("Field 'email' cannot be empty or invalid email format");
         }
 
-        if( !nameText.getText().toString().isEmpty())
-        {
+        if (!nameText.getText().toString().isEmpty()) {
             name = nameText.getText().toString();
         } else {
             nameText.setError("Field 'Username' cannot be empty");
         }
 
-        if( !passwordText.getText().toString().isEmpty() & view.getValidateUtil().isPasswordValid(passwordText.getText().toString()))
-        {
+        if (!passwordText.getText().toString().isEmpty() & view.getValidateUtil().isPasswordValid(passwordText.getText().toString())) {
             password = passwordText.getText().toString();
         } else {
             passwordText.setError("Field 'password' cannot be empty or contain less 4 characters");
         }
 
-        if( email != null & name != null & password != null)
-        {
+        if (email != null & name != null & password != null) {
             chatUser = new ChatUser();
-            chatUser.setEmail( email );
-            chatUser.setName( name );
-            chatUser.setPassword( password );
+            chatUser.setEmail(email);
+            chatUser.setName(name);
+            chatUser.setPassword(password);
             chatUser.setPhoto(uriPhoto);
-            Thread registerThread = new Thread(() -> {
-                Backendless.UserService.register( chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext())
-                {
-                    @Override
-                    public void handleResponse( BackendlessUser response )
-                    {
-                        super.handleResponse( response );
-                        Log.i("response", response.toString());
-                        showToast("You sucsesfull registred");
-                        view.getLoginActivity().setLoginFragment();
-                    }
-                });
-            });
-            registerThread.start();
-        }
+            Backendless.UserService.register(chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext()) {
+                @Override
+                public void handleResponse(BackendlessUser response) {
+                    super.handleResponse(response);
+                    Log.i("response", response.toString());
+                    showToast("You sucsesfull registred");
+                    view.getLoginActivity().setLoginFragment();
+                }
 
+                @Override
+                public void handleFault(BackendlessFault fault) {
+                    super.handleFault(fault);
+                    showToast(fault.toString());
+                }
+            });
+        }
     }
 
-    private void showToast( String msg )
-    {
-        Toast.makeText( view.getActivityContext(), msg, Toast.LENGTH_LONG ).show();
+    private void showToast(String msg) {
+        Toast.makeText(view.getActivityContext(), msg, Toast.LENGTH_LONG).show();
     }
 }

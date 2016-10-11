@@ -1,9 +1,9 @@
 package com.iquesoft.andrew.seedprojectchat.di.modules;
 
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
-import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.ChatFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FindFriendFragmentPresenter;
-import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FriendsFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.GroupChatContainerPresenter;
+import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.GroupChatFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.InviteToFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.MyInviteFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
@@ -34,11 +34,6 @@ public class MainActivityModule {
     }
 
     @Provides
-    FriendsFragmentPresenter provideFriendsFragmentPresenter(){
-        return new FriendsFragmentPresenter();
-    }
-
-    @Provides
     FindFriendFragmentPresenter provideFindFriendFragmentPresenter(){
         return new FindFriendFragmentPresenter();
     }
@@ -53,8 +48,14 @@ public class MainActivityModule {
         return new MyInviteFragmentPresenter();
     }
 
+
     @Provides
-    ChatFragmentPresenter provideChatFragmentPresenter(){
-        return new ChatFragmentPresenter();
+    GroupChatContainerPresenter provideGroupChatContainerPresenter(){
+        return new GroupChatContainerPresenter();
+    }
+
+    @Provides
+    GroupChatFragmentPresenter provideGroupChatFragmentPresenter(){
+        return new GroupChatFragmentPresenter();
     }
 }

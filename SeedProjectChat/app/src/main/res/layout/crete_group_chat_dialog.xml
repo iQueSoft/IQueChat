@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_grop_chat_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/chat_name"
+            android:fontFamily="sans-serif"
+            android:id="@+id/group_chat_name"
+            android:layout_alignParentStart="true"
+            android:layout_weight="1" />
+    </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/group_chat_select_participants"
+        android:text="@string/select_participants"
+        android:textSize="18sp"
+        android:fontFamily="sans-serif"
+        android:textColor="@android:color/black"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="8dp"
+        android:paddingStart="5dp"
+        android:layout_below="@+id/til_grop_chat_name"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/recycler_add_user_to_group_chat"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/group_chat_select_participants"
+        android:layout_alignParentBottom="true" />
+
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_create_group_chat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            app:fabSize="mini"
+            app:srcCompat="@drawable/ic_menu_send"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="17dp" />
+    </FrameLayout>
+
+</RelativeLayout>

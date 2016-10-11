@@ -17,8 +17,18 @@ public class Friends
     private java.util.Date created;
     private String objectId;
     private java.util.List<Messages> messages;
+    private Boolean isSelected;
     private BackendlessUser user_one;
     private BackendlessUser user_two;
+
+    public Boolean getSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(Boolean selected) {
+        isSelected = selected;
+    }
+
     public java.util.Date getUpdated()
     {
         return updated;

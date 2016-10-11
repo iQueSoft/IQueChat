@@ -33,9 +33,10 @@ import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
-import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatWithFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatContainer;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
@@ -61,7 +62,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     UpdateCurentUser updateCurentUser;
 
     @Inject
-    ChatFragment chatFragment;
+    ChatWithFriendFragment chatWithFriendFragment;
+
+    @Inject
+    GroupChatContainer groupChatContainer;
 
     //@BindView(R.id.header_image_view)
     CircularImageView headerImage;
@@ -94,7 +98,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         View headerView = navigationView.getHeaderView(0);
         headerImage = (CircularImageView) headerView.findViewById(R.id.header_image_view);
         userName = (TextView) headerView.findViewById(R.id.tv_user_name);
-        userEMail = (TextView) headerView.findViewById(R.id.tv_user_email);
+        userEMail = (TextView) headerView.findViewById(R.id.tv_last_message);
         if (Backendless.UserService.CurrentUser().getProperty("photo") != null) {
             Uri uri = Uri.parse(Backendless.UserService.CurrentUser().getProperty("photo").toString());
             Picasso.with(getBaseContext()).load(uri).placeholder(R.drawable.seed_logo).into(headerImage);
@@ -105,7 +109,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, new AsyncCallback<Void>() {
             @Override
             public void handleResponse(Void response) {
-                Toast.makeText(getBaseContext(), "Registered", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -114,7 +117,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Toast.makeText(getBaseContext(), fault.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     @Override
@@ -144,6 +146,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void setFindFriendFragment() {
         replaceFragment(findFriendFragment, "findFriendFragment");
     }
+
 
     @Override
     public void onBackPressed() {
@@ -201,24 +204,36 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         if (id == R.id.nav_friends) {
             replaceFragment(containerFriendFragment, "containerFriendFragment");
-        } else if (id == R.id.nav_gallery) {
-            replaceFragment(chatFragment, "chatFragment");
-        } else if (id == R.id.nav_slideshow) {
-
+        } else if (id == R.id.nav_group_chat) {
+            replaceFragment(groupChatContainer,"groupChatContainer");
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
 
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_logout) {
+            Thread logoutThread = new Thread(() -> {
+                BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
+                backendlessUser.setProperty(ChatUser.ONLINE, false);
+                updateCurentUser.update(backendlessUser, getBaseContext());
+                Backendless.UserService.logout(new AsyncCallback<Void>() {
+                    public void handleResponse(Void response) {
+                        // user has been logged out.
+                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        finish();
+                    }
+                    public void handleFault(BackendlessFault fault) {
+                        Log.d("logout", fault.getMessage());
+                    }
+                });
+            });
+            logoutThread.start();
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    private void replaceFragment(Fragment fragment, String TAG) {
+    public void replaceFragment(Fragment fragment, String TAG) {
         fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.container, fragment, TAG);
         fragmentTransaction.addToBackStack("backpressed stack");

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.MyInviteAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
@@ -20,8 +21,6 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IMyInvateFr
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
@@ -29,13 +28,12 @@ import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
 
 public class MyInvateFragment extends BaseFragment implements IMyInvateFragment{
 
-    @Inject
+    @InjectPresenter
     MyInviteFragmentPresenter presenter;
 
     @BindView(R.id.recycler_my_invite)
     RecyclerView recyclerMyInvite;
 
-    private rx.Subscription myInviteSubscriptions;
     private MyInviteAdapter adapter;
     private View rootView;
 
@@ -54,14 +52,7 @@ public class MyInvateFragment extends BaseFragment implements IMyInvateFragment{
         this.getComponent(IMainActivityComponent.class).inject(this);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        presenter.init(this);
-        myInviteSubscriptions = presenter.getMyInviteFriendsList().subscribe(this::setUserAdapter);
-    }
-
-    private void setUserAdapter(List<Friends> users) {
+    public void setUserAdapter(List<Friends> users) {
         adapter = new MyInviteAdapter(users, getActivity());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerMyInvite.setLayoutManager(linearLayoutManager);

@@ -1,15 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<FrameLayout
+    android:id="@+id/fragment_friends_container"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:stdrv="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:cardCornerRadius="8dp">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_friends"
+    <io.huannguyen.swipetodeleterv.STDRecyclerView
+        android:id="@+id/recycler_view"
+        android:scrollbars="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        stdrv:border_color="@android:color/darker_gray"
+        stdrv:delete_icon_color="#000000"
+        stdrv:delete_icon_height="24dp"
+        stdrv:delete_icon_width="24dp"
+        stdrv:left_delete_icon_margin="32dp"
+        stdrv:delete_message="Delete ?"
+        stdrv:right_delete_icon_margin="32dp"
+        stdrv:has_border="true"/>
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
@@ -22,4 +33,4 @@
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
         app:layout_behavior="com.iquesoft.andrew.seedprojectchat.util.Fab_Float_onScroll"/>
-</android.support.design.widget.CoordinatorLayout>
+</FrameLayout>

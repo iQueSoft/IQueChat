@@ -28,4 +28,9 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="type_message">type message</string>
+    <string name="select_participants">Select participants:</string>
+    <string name="chat_name">Chat Name</string>
+    <string name="logout">Logout</string>
+    <string name="deleted">Deleted</string>
+    <string name="undo">UNDO</string>
 </resources>
