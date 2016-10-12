@@ -62,6 +62,18 @@ public class GroupChatContainer extends BaseFragment implements IGroupChatContai
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        presenter.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        presenter.onPause();
+    }
+
+    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         this.getComponent(IMainActivityComponent.class).inject(this);
@@ -85,8 +97,10 @@ public class GroupChatContainer extends BaseFragment implements IGroupChatContai
         scaleInAnimationAdapter.setDuration(500);
         recyclerGroupChat.setAdapter(scaleInAnimationAdapter);
         recyclerGroupChat.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), (view, position) ->{
-            Observable.just(groupChatList.get(position)).subscribe(response -> groupChatFragment.setCurentGroupChat(response));
-            mainActivity.replaceFragment(groupChatFragment, "groupChatFragment");
+            if (groupChatList.size() != 0){
+                Observable.just(groupChatList.get(position)).subscribe(response -> groupChatFragment.setCurentGroupChat(response));
+                mainActivity.replaceFragment(groupChatFragment, "groupChatFragment");
+            }
         }
         ));
     }

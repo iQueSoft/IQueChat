@@ -196,6 +196,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return super.onOptionsItemSelected(item);
     }
 
+    public void setGroupChatContainer(){
+        replaceFragment(groupChatContainer,"groupChatContainer");
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
