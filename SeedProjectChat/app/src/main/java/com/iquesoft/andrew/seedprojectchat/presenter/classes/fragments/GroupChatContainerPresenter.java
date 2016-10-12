@@ -31,6 +31,7 @@ import java.util.List;
 
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
@@ -43,11 +44,24 @@ import rx.subjects.PublishSubject;
 public class GroupChatContainerPresenter extends MvpPresenter<IGroupChatContainer> implements IGroupChatContainerPresenter {
 
     private GroupChatFriendListAdapter adapter;
+    private Subscription subscription;
 
     @Override
     protected void onFirstViewAttach() {
         super.onFirstViewAttach();
-        getGroupChatList().subscribe(response -> getViewState().setGroupChatContainerAdapter(response));
+    }
+
+    public void onResume(){
+        subscription =  getGroupChatList().subscribe(response -> getViewState().setGroupChatContainerAdapter(response));
+    }
+
+    public void onPause(){
+        subscription.unsubscribe();
+    }
+
+    @Override
+    public boolean isInRestoreState(IGroupChatContainer view) {
+        return super.isInRestoreState(view);
     }
 
     public PublishSubject<List<GroupChat>> getGroupChatList(){

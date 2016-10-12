@@ -2,6 +2,7 @@ package com.iquesoft.andrew.seedprojectchat.adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +30,7 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
     private List<GroupChat> groupChatList;
     private Context context;
 
-    public GroupChatContainerAdapter(List<GroupChat> groupChatList, Context context){
+    public GroupChatContainerAdapter(@NonNull List<GroupChat> groupChatList, Context context){
         this.context = context;
         this.groupChatList = groupChatList;
     }
@@ -51,22 +52,25 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
                     user = listUser;
                 }
             }
-            if (user.getProperty(ChatUser.PHOTO) != null){
-                String photo = (String) user.getProperty(ChatUser.PHOTO);
-                Uri uri = Uri.parse(photo);
-                Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).error(R.drawable.error).into(holder.cimUserImage);
-            }
-            Boolean online = (Boolean) user.getProperty(ChatUser.ONLINE);
-            if (online){
-                holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.online));
+            if (user != null){
+                if (user.getProperty(ChatUser.PHOTO) != null){
+                    String photo = (String) user.getProperty(ChatUser.PHOTO);
+                    Uri uri = Uri.parse(photo);
+                    Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).error(R.drawable.error).into(holder.cimUserImage);
+                }
+                Boolean online = (Boolean) user.getProperty(ChatUser.ONLINE);
+                if (online){
+                    holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.online));
+                } else {
+                    holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.offline));
+                }
+                Observable.just(curentGroupChat.getMessages()).flatMap(Observable::from).observeOn(Schedulers.io()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
+                        .subscribe(response -> {
+                            holder.tvLastMessage.setText(response.get(0).getData());
+                            holder.tvLastMessageDate.setText(response.get(0).getTimestamp().toString());
+                        });
             } else {
-                holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.offline));
             }
-            Observable.just(curentGroupChat.getMessages()).flatMap(Observable::from).observeOn(Schedulers.io()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
-                    .subscribe(response -> {
-                        holder.tvLastMessage.setText(response.get(0).getData());
-                        holder.tvLastMessageDate.setText(response.get(0).getTimestamp().toString());
-                    });
         }
     }
 

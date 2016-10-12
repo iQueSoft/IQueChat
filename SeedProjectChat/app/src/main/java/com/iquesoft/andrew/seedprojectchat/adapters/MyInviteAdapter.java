@@ -42,16 +42,18 @@ public class MyInviteAdapter extends RecyclerView.Adapter<MyInviteAdapter.ViewHo
     public void onBindViewHolder(MyInviteAdapter.ViewHolder holder, int position) {
         Friends curentFriend = users.get(position);
         BackendlessUser user = users.get(position).getUser_two();
-        if (user.getProperty(ChatUser.PHOTO) != null){
-            Uri uri = Uri.parse(user.getProperty(ChatUser.PHOTO).toString());
-            Picasso.with(context).load(uri).fit().placeholder(R.drawable.seed_logo).into(holder.cimUserImage);
-        }
-        if (user.getProperty(ChatUser.NAME) != null){
-            holder.tvUserName.setText(user.getProperty(ChatUser.NAME).toString());
-        }
-        holder.tvUserEMail.setText(user.getEmail());
+        if (user != null){
+            if (user.getProperty(ChatUser.PHOTO) != null){
+                Uri uri = Uri.parse(user.getProperty(ChatUser.PHOTO).toString());
+                Picasso.with(context).load(uri).fit().placeholder(R.drawable.seed_logo).into(holder.cimUserImage);
+            }
+            if (user.getProperty(ChatUser.NAME) != null){
+                holder.tvUserName.setText(user.getProperty(ChatUser.NAME).toString());
+            }
+            holder.tvUserEMail.setText(user.getEmail());
 
-        holder.denial.setOnClickListener(view -> curentFriend.removeAsync(new DefaultBackendlessCallback<Long>(context)));
+            holder.denial.setOnClickListener(view -> curentFriend.removeAsync(new DefaultBackendlessCallback<Long>(context)));
+        }
     }
 
     @Override
