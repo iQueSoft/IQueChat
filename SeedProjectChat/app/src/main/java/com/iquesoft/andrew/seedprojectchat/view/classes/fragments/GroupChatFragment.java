@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,8 +16,6 @@ import android.widget.EditText;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
-import com.backendless.BackendlessUser;
-import com.backendless.async.callback.BackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
@@ -61,6 +60,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     public void onCreate(Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
+        Log.d("check", "OnCreate");
     }
 
     @Nullable
@@ -101,8 +101,14 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        String curentUserId = Backendless.UserService.CurrentUser().getUserId();
         menu.clear();
         inflater.inflate(R.menu.group_chat_fragment_menu, menu);
+        if (curentUserId.equals(curentGroupChat.getOwner().getUserId())){
+            MenuItem clearHistory = menu.findItem(R.id.action_clear_history);
+            clearHistory.setVisible(true);
+            menu.findItem(R.id.action_delete_chat).setVisible(true);
+        }
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -110,28 +116,15 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_leave){
-            if (Backendless.UserService.CurrentUser().getUserId().equals(curentGroupChat.getOwnerId())){
-                curentGroupChat.removeAsync(new BackendlessCallback<Long>() {
-                    @Override
-                    public void handleResponse(Long aLong) {
-                    }
-                });
-            } else {
-                for (BackendlessUser user : curentGroupChat.getUsers()){
-                    if (user.getUserId().equals(Backendless.UserService.CurrentUser().getUserId())){
-                        curentGroupChat.getUsers().remove(user);
-                        curentGroupChat.saveAsync(new BackendlessCallback<GroupChat>() {
-                            @Override
-                            public void handleResponse(GroupChat groupChat) {
-                            }
-                        });
-                        mainActivity.setGroupChatContainer();
-                        break;
-                    }
-                }
-            }
+            presenter.liveChat(mainActivity);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onPause() {
+        presenter.saveCurentChat();
+        super.onPause();
     }
 
     @Override

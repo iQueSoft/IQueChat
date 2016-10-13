@@ -16,4 +16,7 @@ public interface IGroupChatContainer extends MvpView {
     @StateStrategyType(SkipStrategy.class)
     void setGroupChatContainerAdapter(List<GroupChat> groupChatList);
 
+    @StateStrategyType(SkipStrategy.class)
+    void addNewChatToRecycler(GroupChat groupChat);
+
 }

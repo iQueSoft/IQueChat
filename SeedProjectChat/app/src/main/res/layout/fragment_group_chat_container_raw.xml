@@ -2,7 +2,7 @@
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardElevation="8dp"
     app:cardCornerRadius="8dp"
@@ -67,7 +67,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/tv_last_message"
-            android:text="eMail"
             android:scrollHorizontally="false"
             android:maxLines="4"
             android:minLines="1"
@@ -82,7 +81,6 @@
 
         <TextView
             android:id="@+id/tv_last_message_date"
-            android:text="last message date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/tv_last_message"

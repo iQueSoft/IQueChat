@@ -31,7 +31,6 @@ import java.util.List;
 
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
@@ -44,19 +43,11 @@ import rx.subjects.PublishSubject;
 public class GroupChatContainerPresenter extends MvpPresenter<IGroupChatContainer> implements IGroupChatContainerPresenter {
 
     private GroupChatFriendListAdapter adapter;
-    private Subscription subscription;
 
     @Override
     protected void onFirstViewAttach() {
+        getGroupChatList().subscribe(response -> getViewState().setGroupChatContainerAdapter(response));
         super.onFirstViewAttach();
-    }
-
-    public void onResume(){
-        subscription =  getGroupChatList().subscribe(response -> getViewState().setGroupChatContainerAdapter(response));
-    }
-
-    public void onPause(){
-        subscription.unsubscribe();
     }
 
     @Override
@@ -69,6 +60,7 @@ public class GroupChatContainerPresenter extends MvpPresenter<IGroupChatContaine
         String whereClause = "owner.objectId='" + Backendless.UserService.CurrentUser().getObjectId() + "'" + " or " +
                 "users.objectId='" + Backendless.UserService.CurrentUser().getObjectId() + "'";
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
+        dataQuery.setPageSize(100);
         dataQuery.setWhereClause(whereClause);
         GroupChat.findAsync(dataQuery, new BackendlessCallback<BackendlessCollection<GroupChat>>(){
             @Override
@@ -89,25 +81,27 @@ public class GroupChatContainerPresenter extends MvpPresenter<IGroupChatContaine
         if (!getCurentFriendList().subscribe().isUnsubscribed()){
             getCurentFriendList().subscribe(response -> setFriendAdapter(response, recyclerAddUserToGroupChat, context));
         }
-        fabCreateGroupChat.setOnClickListener(v -> {
-            ArrayList<BackendlessUser> users = new ArrayList<>();
-            for (Friends friend : adapter.getFriendsList()){
-                if (friend.getUser_one().getUserId().equals(Backendless.UserService.CurrentUser().getUserId()))
-                {
-                    if (friend.getSelected()){
-                        users.add(friend.getUser_two());
-                    }
-                } else {
-                    if (friend.getSelected()){
-                        users.add(friend.getUser_one());
-                    }
-                }
-            }
-            createGroupChat(chatName.getText().toString(), users);
-        });
         AlertDialog dialog = builder.create();
         dialog.setCancelable(true);
         dialog.show();
+        fabCreateGroupChat.setOnClickListener(v -> {
+            ArrayList<BackendlessUser> users = new ArrayList<>();
+            if (adapter.getFriendsList() != null){
+                for (Friends friend : adapter.getFriendsList()){
+                    if (friend.getUser_one().getUserId().equals(Backendless.UserService.CurrentUser().getUserId()))
+                    {
+                        if (friend.getSelected()){
+                            users.add(friend.getUser_two());
+                        }
+                    } else {
+                        if (friend.getSelected()){
+                            users.add(friend.getUser_one());
+                        }
+                    }
+                }
+            }
+            createGroupChat(chatName.getText().toString(), users, dialog);
+        });
     }
 
     private void setFriendAdapter(List<Friends> friends, RecyclerView recyclerAddUserToGroupChat, Context context) {
@@ -121,15 +115,16 @@ public class GroupChatContainerPresenter extends MvpPresenter<IGroupChatContaine
         recyclerAddUserToGroupChat.setAdapter(scaleInAnimationAdapter);
     }
 
-    public void createGroupChat(String chanel, List<BackendlessUser> users){
+    private void createGroupChat(String chatName, List<BackendlessUser> users, AlertDialog alertDialog){
         GroupChat groupChat = new GroupChat();
-        groupChat.setChanel(chanel);
+        groupChat.setChatName(chatName);
         groupChat.setOwner(Backendless.UserService.CurrentUser());
         groupChat.setUsers(users);
         groupChat.saveAsync(new BackendlessCallback<GroupChat>() {
             @Override
             public void handleResponse(GroupChat groupChat) {
-
+                getViewState().addNewChatToRecycler(groupChat);
+                alertDialog.dismiss();
             }
         });
     }

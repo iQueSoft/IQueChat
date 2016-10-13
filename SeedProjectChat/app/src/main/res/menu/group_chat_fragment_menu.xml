@@ -2,6 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_leave"
+        android:visible="true"
         android:orderInCategory="100"
         android:title="Leave this Chat" />
+    <item
+        android:id="@+id/action_delete_chat"
+        android:visible="false"
+        android:orderInCategory="100"
+        android:title="Delete Chat" />
+    <item
+        android:id="@+id/action_clear_history"
+        android:visible="false"
+        android:orderInCategory="100"
+        android:title="Clear chat message history" />
+    <item
+        android:id="@+id/action_disable_notification"
+        android:visible="true"
+        android:checkable="true"
+        android:title="Disable notification" />
 </menu>
