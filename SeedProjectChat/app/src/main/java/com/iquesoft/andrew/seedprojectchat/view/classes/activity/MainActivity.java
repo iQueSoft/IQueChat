@@ -74,6 +74,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     //@BindView(R.id.tv_user_email)
     TextView userEMail;
 
+    private Fragment curentFragment;
     private FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
 
@@ -237,12 +238,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return true;
     }
 
+    public Fragment getCurentFragment(){
+        return curentFragment;
+    }
+
     public void replaceFragment(Fragment fragment, String TAG) {
         fragmentTransaction = fragmentManager.beginTransaction();
+        if (curentFragment != null){
+            fragmentTransaction.remove(curentFragment);
+        }
         fragmentTransaction.replace(R.id.container, fragment, TAG);
+        curentFragment = fragment;
         fragmentTransaction.addToBackStack("backpressed stack");
         fragmentTransaction.commit();
     }
+
 
     @Override
     protected void setupComponent(ISeedProjectChatComponent appComponent) {

@@ -43,35 +43,54 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
     @Override
     public void onBindViewHolder(GroupChatContainerAdapter.ViewHolder holder, int position) {
         GroupChat curentGroupChat = groupChatList.get(position);
-        holder.tvChatName.setText(curentGroupChat.getChanel());
-        if (curentGroupChat.getMessages().size() != 0){
-            String lastMessageOwnerID = curentGroupChat.getMessages().get(0).getOwnerId();
-            BackendlessUser user = null;
-            for (BackendlessUser listUser : groupChatList.get(position).getUsers() ) {
-                if (listUser.getUserId().equals(lastMessageOwnerID)){
-                    user = listUser;
+        holder.tvChatName.setText(curentGroupChat.getChatName());
+        if (curentGroupChat.getMessages() != null ){
+            if (curentGroupChat.getMessages().size() != 0){
+                String lastMessageOwnerID = curentGroupChat.getMessages().get(0).getOwnerId();
+                BackendlessUser user = null;
+                for (int i = 0; i < groupChatList.get(position).getUsers().size(); i++) {
+                    BackendlessUser listUser = groupChatList.get(position).getUsers().get(i);
+                    if (listUser.getUserId().equals(lastMessageOwnerID)){
+                        user = listUser;
+                        break;
+                    } else if (i == groupChatList.get(position).getUsers().size() - 1 & user == null){
+                        if (curentGroupChat.getOwner().getUserId().equals(lastMessageOwnerID)){
+                            user = groupChatList.get(position).getOwner();
+                            break;
+                        }
+                    }
                 }
-            }
-            if (user != null){
-                if (user.getProperty(ChatUser.PHOTO) != null){
-                    String photo = (String) user.getProperty(ChatUser.PHOTO);
-                    Uri uri = Uri.parse(photo);
-                    Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).error(R.drawable.error).into(holder.cimUserImage);
-                }
-                Boolean online = (Boolean) user.getProperty(ChatUser.ONLINE);
-                if (online){
-                    holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.online));
-                } else {
-                    holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.offline));
+                if (user != null){
+                    if (user.getProperty(ChatUser.PHOTO) != null){
+                        String photo = (String) user.getProperty(ChatUser.PHOTO);
+                        Uri uri = Uri.parse(photo);
+                        Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).error(R.drawable.error).into(holder.cimUserImage);
+                    }
+                    Boolean online = (Boolean) user.getProperty(ChatUser.ONLINE);
+                    if (online){
+                        holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.online));
+                    } else {
+                        holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.offline));
+                    }
                 }
                 Observable.just(curentGroupChat.getMessages()).flatMap(Observable::from).observeOn(Schedulers.io()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
                         .subscribe(response -> {
                             holder.tvLastMessage.setText(response.get(0).getData());
                             holder.tvLastMessageDate.setText(response.get(0).getTimestamp().toString());
                         });
-            } else {
+            }else {
+                setMessageGone(holder);
             }
+        } else {
+            setMessageGone(holder);
         }
+    }
+
+    private void setMessageGone(ViewHolder viewHolder){
+        viewHolder.tvLastMessage.setVisibility(View.GONE);
+        viewHolder.tvLastMessageDate.setVisibility(View.GONE);
+        viewHolder.cimUserImage.setVisibility(View.GONE);
+        viewHolder.cimOnline.setVisibility(View.GONE);
     }
 
     @Override
@@ -95,5 +114,17 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
             tvLastMessage = (TextView) itemView.findViewById(R.id.tv_last_message);
             tvLastMessageDate = (TextView) itemView.findViewById(R.id.tv_last_message_date);
         }
+    }
+
+    // Insert a new item to the RecyclerView
+    public void insert(GroupChat groupChat, int position) {
+        groupChatList.add(position, groupChat);
+        notifyItemInserted(position);
+    }
+
+    // Remove a RecyclerView item containing the Data object
+    public void remove(int index) {
+        groupChatList.remove(index);
+        notifyItemRemoved(index);
     }
 }

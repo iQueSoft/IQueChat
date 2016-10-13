@@ -1,10 +1,12 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
+import android.util.Log;
 import android.widget.EditText;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
 import com.backendless.Subscription;
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
@@ -16,6 +18,7 @@ import com.backendless.services.messaging.PublishStatusEnum;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IGroupChatFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatFragment;
 
 import java.util.Date;
@@ -27,6 +30,7 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  * Created by andru on 9/23/2016.
@@ -39,6 +43,9 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     private Subscription subscription;
     private PublishSubject<List<Message>> messages = PublishSubject.create();
     private GroupChat curentGroupChat;
+    private rx.Subscription messageSubscription;
+    private rx.Subscription sortMessage;
+    private CompositeSubscription compositeSubscription;
 
     public void setCurentGroupChat(GroupChat groupChat){
         curentGroupChat = groupChat;
@@ -49,10 +56,14 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     }
 
     @Override
-    protected void onFirstViewAttach() {
-        super.onFirstViewAttach();
+    public void attachView(IGroupChatFragment view) {
+        Log.d("check", "attach");
         subscribe();
-        messages
+        sortMessage = Observable.from(curentGroupChat.getMessages()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
+                .subscribe(response -> {
+                    getViewState().setMessageAdapter(response);
+                });
+        messageSubscription = messages
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .flatMap(Observable::from)
@@ -66,18 +77,57 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
                     messages.setMessage_id(response.getMessageId());
                     return Observable.just(messages);
                 }).filter(response -> response != null).subscribe(response -> {
-            curentGroupChat.getMessages().add(response);
-            getViewState().showNewMessage(response);
-            curentGroupChat.saveAsync(new BackendlessCallback<GroupChat>(){
+                    curentGroupChat.getMessages().add(response);
+                    getViewState().showNewMessage(response);
+                });
+        compositeSubscription = new CompositeSubscription(messageSubscription, sortMessage);
+        super.attachView(view);
+    }
+
+    public void saveCurentChat(){
+        curentGroupChat.saveAsync(new BackendlessCallback<GroupChat>() {
+            @Override
+            public void handleResponse(GroupChat groupChat) {
+                Log.d("response", groupChat.toString());
+            }
+        });
+    }
+
+    @Override
+    public void detachView(IGroupChatFragment view) {
+        Log.d("check", "detach");
+        compositeSubscription.unsubscribe();
+        try {
+            subscription.cancelSubscription();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        super.detachView(view);
+    }
+
+    public void liveChat(MainActivity mainActivity){
+        String myId = Backendless.UserService.CurrentUser().getUserId();
+        if (myId.equals(curentGroupChat.getOwnerId())){
+            curentGroupChat.removeAsync(new BackendlessCallback<Long>() {
                 @Override
-                public void handleResponse(GroupChat groupChat) {
+                public void handleResponse(Long aLong) {
                 }
             });
-        });
-        Observable.from(curentGroupChat.getMessages()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
-                .subscribe(response -> {
-                    getViewState().setMessageAdapter(response);
-                });
+        } else {
+            for (BackendlessUser user : curentGroupChat.getUsers()){
+                if (user.getUserId().equals(myId)){
+                    curentGroupChat.getUsers().remove(user);
+                    curentGroupChat.saveAsync(new BackendlessCallback<GroupChat>() {
+                        @Override
+                        public void handleResponse(GroupChat groupChat) {
+                            mainActivity.setGroupChatContainer();
+                        }
+
+                    });
+                    break;
+                }
+            }
+        }
     }
 
     @Inject
@@ -89,7 +139,7 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
 
     private void subscribe() {
         Thread myThread = new Thread(() -> {
-            Backendless.Messaging.subscribe(curentGroupChat.getChanel(), new BackendlessCallback<List<Message>>() {
+            Backendless.Messaging.subscribe(curentGroupChat.getObjectId(), new BackendlessCallback<List<Message>>() {
                 @Override
                 public void handleResponse(List<Message> response) {
                     messages.onNext(response);
@@ -112,7 +162,7 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     public boolean onSendMessage(EditText messageField) {
         String message = messageField.getText().toString();
         Thread sendThread = new Thread(() -> {
-            Backendless.Messaging.publish(curentGroupChat.getChanel(),(Object) message, publishOptions, new BackendlessCallback<MessageStatus>() {
+            Backendless.Messaging.publish(curentGroupChat.getObjectId(), message, publishOptions, new BackendlessCallback<MessageStatus>() {
                 @Override
                 public void handleResponse(MessageStatus response) {
                     PublishStatusEnum messageStatus = response.getStatus();

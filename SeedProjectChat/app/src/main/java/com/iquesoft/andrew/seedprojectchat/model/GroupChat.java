@@ -17,7 +17,9 @@ public class GroupChat
     private String ownerId;
     private java.util.Date updated;
     private String chanel;
+    private Double serialVersionUID;
     private String objectId;
+    private String chatName;
     private java.util.List<Messages> messages;
     private BackendlessUser owner;
     private java.util.List<BackendlessUser> users;
@@ -46,9 +48,29 @@ public class GroupChat
         this.chanel = chanel;
     }
 
+    public Double getSerialVersionUID()
+    {
+        return serialVersionUID;
+    }
+
+    public void setSerialVersionUID( Double serialVersionUID )
+    {
+        this.serialVersionUID = serialVersionUID;
+    }
+
     public String getObjectId()
     {
         return objectId;
+    }
+
+    public String getChatName()
+    {
+        return chatName;
+    }
+
+    public void setChatName( String chatName )
+    {
+        this.chatName = chatName;
     }
 
     public java.util.List<Messages> getMessages()
@@ -104,7 +126,11 @@ public class GroupChat
 
     public void saveAsync( AsyncCallback<GroupChat> callback )
     {
-        Backendless.Data.of( GroupChat.class ).save( this, callback );
+        try {
+            Backendless.Data.of( GroupChat.class ).save( this, callback );
+        } catch (RuntimeException e){
+            e.printStackTrace();
+        }
     }
 
     public Long remove()
@@ -207,12 +233,12 @@ public class GroupChat
         Backendless.Data.of( GroupChat.class ).findLast( callback );
     }
 
-    public static BackendlessCollection<GroupChat> find(BackendlessDataQuery query )
+    public static BackendlessCollection<GroupChat> find( BackendlessDataQuery query )
     {
         return Backendless.Data.of( GroupChat.class ).find( query );
     }
 
-    public static Future<BackendlessCollection<GroupChat>> findAsync(BackendlessDataQuery query )
+    public static Future<BackendlessCollection<GroupChat>> findAsync( BackendlessDataQuery query )
     {
         if( Backendless.isAndroid() )
         {
