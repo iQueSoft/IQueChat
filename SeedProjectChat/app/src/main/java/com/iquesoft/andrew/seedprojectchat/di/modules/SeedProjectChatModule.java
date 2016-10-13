@@ -128,7 +128,6 @@ public class SeedProjectChatModule {
     }
 
     @Provides
-    @Singleton
     GroupChatFragment provideGroupChatFragment(){
         return new GroupChatFragment();
     }

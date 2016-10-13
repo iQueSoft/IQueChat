@@ -62,18 +62,6 @@ public class GroupChatContainer extends BaseFragment implements IGroupChatContai
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        presenter.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        presenter.onPause();
-    }
-
-    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         this.getComponent(IMainActivityComponent.class).inject(this);
@@ -84,6 +72,11 @@ public class GroupChatContainer extends BaseFragment implements IGroupChatContai
     public void setFabCreateGroupChat(){
         LayoutInflater inflater = getActivity().getLayoutInflater();
         presenter.createDialogGroupChat(getActivity(), inflater);
+    }
+
+    public void addNewChatToRecycler(GroupChat groupChat){
+        groupChatContainerAdapter.insert(groupChat, 0);
+        recyclerGroupChat.smoothScrollToPosition(0);
     }
 
 

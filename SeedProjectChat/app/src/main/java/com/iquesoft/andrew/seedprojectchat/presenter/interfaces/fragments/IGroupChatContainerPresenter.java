@@ -1,6 +1,5 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments;
 
-import com.backendless.BackendlessUser;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
 
@@ -16,5 +15,4 @@ import rx.subjects.PublishSubject;
 public interface IGroupChatContainerPresenter {
     BehaviorSubject<List<Friends>> getCurentFriendList();
     PublishSubject<List<GroupChat>> getGroupChatList();
-    void createGroupChat(String chanel, List<BackendlessUser> users);
 }
