@@ -8,7 +8,7 @@ android {
     buildToolsVersion "24.0.2"
     defaultConfig {
         applicationId "com.iquesoft.andrew.seedprojectchat"
-        minSdkVersion 17
+        minSdkVersion 19
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -47,11 +47,16 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha1'
     compile 'id.zelory:compressor:1.0.2'
     compile 'com.github.orangegangsters:swipy:1.2.3@aar'
+    compile 'com.arello-mobile:moxy:1.0.0'
+    compile 'com.arello-mobile:moxy-app-compat:1.0.0'
+    compile 'io.huannguyen.SwipeToDeleteRV:swipe-to-delete-rv:1.1.6'
+    compile 'io.github.rockerhieu:emojiconize:1.0.0'
+    compile 'io.github.rockerhieu:emojicon:1.4.1'
+    compile 'org.apache.commons:commons-lang3:3.4'
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.+'
     apt 'com.google.dagger:dagger-compiler:2.+'
-    compile 'com.arello-mobile:moxy:1.0.0'
-    compile 'com.arello-mobile:moxy-app-compat:1.0.0'
     apt 'com.arello-mobile:moxy-compiler:1.0.0'
-    compile 'io.huannguyen.SwipeToDeleteRV:swipe-to-delete-rv:1.1.6'
+    compile 'com.android.support.test.espresso:espresso-core:2.2.2'
+    compile 'com.droidninja:filepicker:1.0.6'
 }

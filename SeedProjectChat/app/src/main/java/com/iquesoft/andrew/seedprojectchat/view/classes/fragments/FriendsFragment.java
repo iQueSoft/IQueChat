@@ -96,7 +96,7 @@ public class FriendsFragment extends BaseFragment implements IFriendsFragment {
         stdRecyclerView.setAdapter(scaleInAnimationAdapter);
         stdRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), (view, position) ->{
             chatWithFriendFragment.setFriend(users.get(position));
-            mainActivity.replaceFragment(chatWithFriendFragment, "chatWithFriendFragment");
+            mainActivity.replaceFragment(chatWithFriendFragment);
         }));
 
     }

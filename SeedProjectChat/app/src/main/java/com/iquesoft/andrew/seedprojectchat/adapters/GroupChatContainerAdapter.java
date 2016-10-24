@@ -16,9 +16,13 @@ import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.List;
 
+import io.github.rockerhieu.emojicon.EmojiconTextView;
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
@@ -73,9 +77,12 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
                         holder.cimOnline.setImageDrawable(context.getResources().getDrawable(R.drawable.offline));
                     }
                 }
-                Observable.just(curentGroupChat.getMessages()).flatMap(Observable::from).observeOn(Schedulers.io()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
+                Observable.just(curentGroupChat.getMessages()).subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .flatMap(Observable::from)
+                        .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
                         .subscribe(response -> {
-                            holder.tvLastMessage.setText(response.get(0).getData());
+                            holder.tvLastMessage.setText(StringEscapeUtils.unescapeJava(response.get(0).getData()));
                             holder.tvLastMessageDate.setText(response.get(0).getTimestamp().toString());
                         });
             }else {
@@ -103,7 +110,7 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
         CircularImageView cimUserImage;
         CircularImageView cimOnline;
         TextView tvChatName;
-        TextView tvLastMessage;
+        EmojiconTextView tvLastMessage;
         TextView tvLastMessageDate;
 
         public ViewHolder(View itemView) {
@@ -111,7 +118,7 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
             cimUserImage = (CircularImageView) itemView.findViewById(R.id.cim_user_image);
             cimOnline = (CircularImageView) itemView.findViewById(R.id.cim_online);
             tvChatName = (TextView) itemView.findViewById(R.id.tv_group_chat_name);
-            tvLastMessage = (TextView) itemView.findViewById(R.id.tv_last_message);
+            tvLastMessage = (EmojiconTextView) itemView.findViewById(R.id.tv_last_message);
             tvLastMessageDate = (TextView) itemView.findViewById(R.id.tv_last_message_date);
         }
     }

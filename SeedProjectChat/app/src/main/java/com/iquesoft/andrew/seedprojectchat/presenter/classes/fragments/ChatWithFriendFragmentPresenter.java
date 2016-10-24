@@ -1,6 +1,7 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -19,14 +20,17 @@ import com.backendless.persistence.BackendlessDataQuery;
 import com.backendless.services.messaging.MessageStatus;
 import com.backendless.services.messaging.PublishStatusEnum;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
-import com.iquesoft.andrew.seedprojectchat.common.DefaultMessages;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IChatWithFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFriendFragment;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -43,6 +47,7 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     private SubscriptionOptions subscriptionOptions;
     private PublishSubject<List<Message>> messages = PublishSubject.create();
     private Subscription subscription;
+    private rx.Subscription subscribeUpdateNewMessages;
     private Friends friends;
     private Context context;
 
@@ -52,11 +57,6 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
 
     public void setFriends(Friends friends) {
         this.friends = friends;
-    }
-
-    public void setSubtopic(String subtopic) {
-        publishOptions.setSubtopic(subtopic);
-        subscriptionOptions.setSubtopic(subtopic);
     }
 
     public void setContext(Context context) {
@@ -70,22 +70,16 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     }
 
     @Override
-    protected void onFirstViewAttach() {
-        super.onFirstViewAttach();
+    public void attachView(IChatWithFriendFragment view) {
         subscribe();
-        Observable.from(getFriends().getMessages())
-                .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
-                .subscribe(response -> getViewState().setUserAdapter(response));
-        subscribeUpdateNewMessages();
-    }
-
-    private void subscribeUpdateNewMessages(){
-        messages.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).flatMap(Observable::from).flatMap(response -> {
+        subscribeUpdateNewMessages = messages.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).flatMap(Observable::from).flatMap(response -> {
             Messages messages = new Messages();
             messages.setHeader(response.getHeaders().get("android-ticker-text"));
             Date date = new Date(response.getTimestamp());
             messages.setTimestamp(date);
             messages.setPublisher_id(response.getPublisherId());
+            Map<String, String> mm = splitToMap(response.getData().toString(), ", ", "=");
+            Log.d("mm", mm.get("message"));
             messages.setData(response.getData().toString());
             messages.setMessage_id(response.getMessageId());
             return Observable.just(messages);
@@ -97,11 +91,39 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
             saveThread.start();
             getViewState().updateLastVisibleMessage(response);
         });
+        super.attachView(view);
     }
 
-    private void subscribe() {
-        Thread myThread = new Thread(() -> {
-            Backendless.Messaging.subscribe(DefaultMessages.DEGAULT_CHANEL, new BackendlessCallback<List<Message>>() {
+    public static Map<String, String> splitToMap(String source, String entriesSeparator, String keyValueSeparator) {
+        Map<String, String> map = new HashMap<String, String>();
+        String[] entries = source.replace("{", "").replace("}","").split(entriesSeparator);
+        for (String entry : entries) {
+            if (!TextUtils.isEmpty(entry) && entry.contains(keyValueSeparator)) {
+                String[] keyValue = entry.split(keyValueSeparator);
+                map.put(keyValue[0], keyValue[1]);
+            }
+        }
+        return map;
+    }
+
+    @Override
+    public void detachView(IChatWithFriendFragment view) {
+        subscription.cancelSubscription();
+        subscribeUpdateNewMessages.unsubscribe();
+        super.detachView(view);
+    }
+
+    @Override
+    protected void onFirstViewAttach() {
+        super.onFirstViewAttach();
+        Observable.from(getFriends().getMessages())
+                .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
+                .subscribe(response -> getViewState().setUserAdapter(response));
+    }
+
+
+    public void subscribe() {
+            Backendless.Messaging.subscribe(friends.getObjectId(), new BackendlessCallback<List<Message>>() {
                 @Override
                 public void handleResponse(List<Message> response) {
                     messages.onNext(response);
@@ -117,15 +139,21 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
                     subscription = response;
                 }
             });
-        });
-        myThread.start();
     }
 
     @Override
     public boolean onSendMessage(EditText messageField, Context context) {
-        String message = messageField.getText().toString();
+        String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(messageField.getText().toString());
+        Message message = new Message();
+        Long tsLong = System.currentTimeMillis()/1000;
+        message.setTimestamp(tsLong);
+        message.setData(toServerUnicodeEncoded);
+        message.setPublisherId(Backendless.UserService.CurrentUser().getUserId());
+        Map<String, String> map = new HashMap<>();
+        map.put("message", toServerUnicodeEncoded);
+        map.put("image", "imgURI");
         Thread sendThread = new Thread(() -> {
-            Backendless.Messaging.publish((Object) message, publishOptions, new DefaultBackendlessCallback<MessageStatus>(context) {
+            Backendless.Messaging.publish(friends.getObjectId(), map, publishOptions, new DefaultBackendlessCallback<MessageStatus>(context) {
                 @Override
                 public void handleResponse(MessageStatus response) {
                     super.handleResponse(response);
@@ -150,7 +178,10 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
             @Override
             public void handleResponse(BackendlessCollection<Friends> friendsBackendlessCollection) {
                 Observable.just(friendsBackendlessCollection.getData().get(0).getMessages()).flatMap(Observable::from).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
-                        .subscribe(response -> getViewState().setUserAdapter(response));
+                        .subscribe(response -> {
+                            getViewState().setUserAdapter(response);
+                            friends.setMessages(response);
+                        });
             }
         });
     }

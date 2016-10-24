@@ -33,10 +33,13 @@ import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatWithFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatContainer;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.SettingsFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.TermsAndConditionsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
@@ -67,16 +70,18 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Inject
     GroupChatContainer groupChatContainer;
 
-    //@BindView(R.id.header_image_view)
-    CircularImageView headerImage;
-    //@BindView(R.id.tv_user_name)
-    TextView userName;
-    //@BindView(R.id.tv_user_email)
-    TextView userEMail;
+    @Inject
+    SettingsFragment settingsFragment;
 
-    private Fragment curentFragment;
-    private FragmentManager fragmentManager;
-    private FragmentTransaction fragmentTransaction;
+    @Inject
+    TermsAndConditionsFragment termsAndConditionsFragment;
+
+    @Inject
+    AboutUsFragment aboutUsFragment;
+
+    CircularImageView headerImage;
+    TextView userName;
+    TextView userEMail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +96,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-        fragmentManager = getSupportFragmentManager();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -123,7 +127,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onStop() {
         Thread onlineThread = new Thread(() -> {
-            if (Backendless.UserService.CurrentUser() != null){
+            if (Backendless.UserService.CurrentUser() != null) {
                 BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
                 backendlessUser.setProperty(ChatUser.ONLINE, false);
                 updateCurentUser.update(backendlessUser, this);
@@ -135,7 +139,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Override
     protected void onResume() {
-        Thread onlineThread = new Thread(()-> {
+        Thread onlineThread = new Thread(() -> {
             BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
             backendlessUser.setProperty(ChatUser.ONLINE, true);
             updateCurentUser.update(backendlessUser, this);
@@ -145,7 +149,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     public void setFindFriendFragment() {
-        replaceFragment(findFriendFragment, "findFriendFragment");
+        replaceFragment(findFriendFragment);
     }
 
 
@@ -168,12 +172,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_logout) {
             Thread logoutThread = new Thread(() -> {
                 BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
@@ -185,6 +185,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                         startActivity(new Intent(MainActivity.this, LoginActivity.class));
                         finish();
                     }
+
                     public void handleFault(BackendlessFault fault) {
                         // something went wrong and logout failed, to get the error code call fault.getCode()
                     }
@@ -197,8 +198,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return super.onOptionsItemSelected(item);
     }
 
-    public void setGroupChatContainer(){
-        replaceFragment(groupChatContainer,"groupChatContainer");
+    public void setGroupChatContainer() {
+        replaceFragment(groupChatContainer);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -208,11 +209,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         if (id == R.id.nav_friends) {
-            replaceFragment(containerFriendFragment, "containerFriendFragment");
+            replaceFragment(containerFriendFragment);
         } else if (id == R.id.nav_group_chat) {
-            replaceFragment(groupChatContainer,"groupChatContainer");
+            replaceFragment(groupChatContainer);
         } else if (id == R.id.nav_manage) {
-
+            replaceFragment(settingsFragment);
+        } else if (id == R.id.nav_terms_and_conditions){
+            replaceFragment(termsAndConditionsFragment);
+        } else if (id == R.id.nav_about_us){
+            replaceFragment(aboutUsFragment);
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_logout) {
@@ -226,6 +231,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                         startActivity(new Intent(MainActivity.this, LoginActivity.class));
                         finish();
                     }
+
                     public void handleFault(BackendlessFault fault) {
                         Log.d("logout", fault.getMessage());
                     }
@@ -238,19 +244,21 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         return true;
     }
 
-    public Fragment getCurentFragment(){
-        return curentFragment;
-    }
+    public void replaceFragment(Fragment fragment) {
+        String backStateName = "chatBackStack";
+        String fragmentTag = fragment.getClass().getName();
 
-    public void replaceFragment(Fragment fragment, String TAG) {
-        fragmentTransaction = fragmentManager.beginTransaction();
-        if (curentFragment != null){
-            fragmentTransaction.remove(curentFragment);
+        FragmentManager manager = getSupportFragmentManager();
+        boolean fragmentPopped = manager.popBackStackImmediate(backStateName, 0);
+
+        if (!fragmentPopped && manager.findFragmentByTag(fragmentTag) == null) { //fragment not in back stack, create it.
+            FragmentTransaction ft = manager.beginTransaction();
+            ft.replace(R.id.container, fragment, fragmentTag);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.addToBackStack(backStateName);
+            ft.commit();
         }
-        fragmentTransaction.replace(R.id.container, fragment, TAG);
-        curentFragment = fragment;
-        fragmentTransaction.addToBackStack("backpressed stack");
-        fragmentTransaction.commit();
+
     }
 
 
