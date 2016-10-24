@@ -92,7 +92,7 @@ public class GroupChatContainer extends BaseFragment implements IGroupChatContai
         recyclerGroupChat.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), (view, position) ->{
             if (groupChatList.size() != 0){
                 Observable.just(groupChatList.get(position)).subscribe(response -> groupChatFragment.setCurentGroupChat(response));
-                mainActivity.replaceFragment(groupChatFragment, "groupChatFragment");
+                mainActivity.replaceFragment(groupChatFragment);
             }
         }
         ));

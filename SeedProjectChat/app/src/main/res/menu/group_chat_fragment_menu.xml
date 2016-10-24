@@ -20,4 +20,8 @@
         android:visible="true"
         android:checkable="true"
         android:title="Disable notification" />
+    <item
+        android:id="@+id/action_edit_chat"
+        android:visible="true"
+        android:title="Edit chat" />
 </menu>

@@ -18,8 +18,11 @@ import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.List;
 
+import io.github.rockerhieu.emojicon.EmojiconTextView;
 import rx.Observable;
 
 /**
@@ -35,7 +38,12 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
     private List<Messages> messageList;
     private Context context;
 
+    public List<Messages> getMessageList() {
+        return messageList;
+    }
+
     public ChatFragmentAdapter(List<Messages> messageList, Context context) {
+        this.messageList = null;
         this.messageList = messageList;
         this.context = context;
     }
@@ -55,18 +63,20 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
     @Override
     public void onBindViewHolder(ChatFragmentAdapter.ViewHolder holder, int position) {
         Messages messages = messageList.get(position);
-        holder.txtMessage.setText(messages.getData());
-        holder.txtInfo.setText(messages.getTimestamp().toString());
+        holder.txtMessage.setText(StringEscapeUtils.unescapeJava(messages.getData()));
+        if (messages.getTimestamp() != null){
+            holder.txtInfo.setText(messages.getTimestamp().toString());
 
-        Backendless.UserService.findById(messages.getPublisher_id(), new BackendlessCallback<BackendlessUser>() {
-            @Override
-            public void handleResponse(BackendlessUser backendlessUser) {
-                Observable.just(backendlessUser).subscribe(response -> {
-                    Uri uri = Uri.parse(response.getProperty(ChatUser.PHOTO).toString());
-                    Picasso.with(context).load(uri).placeholder(R.drawable.placeholder).error(R.drawable.error).into(holder.cimUserImage);
-                });
-            }
-        });
+            Backendless.UserService.findById(messages.getPublisher_id(), new BackendlessCallback<BackendlessUser>() {
+                @Override
+                public void handleResponse(BackendlessUser backendlessUser) {
+                    Observable.just(backendlessUser).subscribe(response -> {
+                        Uri uri = Uri.parse(response.getProperty(ChatUser.PHOTO).toString());
+                        Picasso.with(context).load(uri).placeholder(R.drawable.placeholder).error(R.drawable.error).into(holder.cimUserImage);
+                    });
+                }
+            });
+        }
 
     }
 
@@ -95,7 +105,7 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView txtMessage;
+        EmojiconTextView txtMessage;
         TextView txtInfo;
         LinearLayout content;
         LinearLayout contentWithBG;
@@ -103,7 +113,7 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
 
         ViewHolder(View itemView) {
             super(itemView);
-            txtMessage = (TextView) itemView.findViewById(R.id.txtMessage);
+            txtMessage = (EmojiconTextView) itemView.findViewById(R.id.txtMessage);
             content = (LinearLayout) itemView.findViewById(R.id.content);
             contentWithBG = (LinearLayout) itemView.findViewById(R.id.contentWithBackground);
             txtInfo = (TextView) itemView.findViewById(R.id.txtInfo);
