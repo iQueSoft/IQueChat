@@ -10,6 +10,6 @@ public class ValidateUtil {
     }
 
     public boolean isPasswordValid(String password) {
-        return password.length() > 4;
+        return password.length() >= 4;
     }
 }

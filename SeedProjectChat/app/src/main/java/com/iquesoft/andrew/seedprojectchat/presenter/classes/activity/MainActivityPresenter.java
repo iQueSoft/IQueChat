@@ -17,4 +17,6 @@ public class MainActivityPresenter implements IMainActivityPresenter {
     public MainActivityPresenter(IMainActivity view){
         this.view = view;
     }
+
+
 }

@@ -2,12 +2,12 @@ package com.iquesoft.andrew.seedprojectchat.di.components;
 
 import com.iquesoft.andrew.seedprojectchat.app.SeedProjectChatApp;
 import com.iquesoft.andrew.seedprojectchat.di.modules.SeedProjectChatModule;
-import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.ChatWithFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.RegisterFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.ConvertBackendlessUserToChatUser;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatWithFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
@@ -18,6 +18,8 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.InviteToFriend
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.LoginFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MyInvateFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.RegisterFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.SettingsFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.TermsAndConditionsFragment;
 
 import javax.inject.Singleton;
 
@@ -50,5 +52,7 @@ public interface ISeedProjectChatComponent {
     ChatWithFriendFragment provideChatWithFriendFragment();
     GroupChatContainer provideGroupChatContainer();
     GroupChatFragment provideGroupChatFragment();
-    ChatWithFriendFragmentPresenter provideChatWithFriendFragmentPresenter();
+    SettingsFragment provideSettingsFragment();
+    TermsAndConditionsFragment provideTermsAndConditionsFragment();
+    AboutUsFragment provideAboutUsFragment();
 }
