@@ -44,7 +44,6 @@ dependencies {
     compile 'fr.baloomba:viewpagerindicator:2.4.2'
     compile 'jp.wasabeef:recyclerview-animators:2.2.3'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha1'
     compile 'id.zelory:compressor:1.0.2'
     compile 'com.github.orangegangsters:swipy:1.2.3@aar'
     compile 'com.arello-mobile:moxy:1.0.0'
@@ -59,4 +58,5 @@ dependencies {
     apt 'com.arello-mobile:moxy-compiler:1.0.0'
     compile 'com.android.support.test.espresso:espresso-core:2.2.2'
     compile 'com.droidninja:filepicker:1.0.6'
+    compile files('backendless.jar')
 }

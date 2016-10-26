@@ -67,6 +67,7 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
     private Friends friend;
     private Boolean emjFlag = false;
     private ArrayList<String> photoPaths;
+    private ArrayList<String> serverPhotoPaths = new ArrayList<>();
     private ArrayList<String> docPaths;
 
     @Nullable
@@ -99,7 +100,15 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
 
     @OnClick(R.id.chatSendButton)
     public void sendClick() {
-        presenter.onSendMessage(messageEdit, getActivity());
+        serverPhotoPaths.clear();
+        if (photoPaths != null){
+            presenter.getAndCompressImageWithUri(photoPaths,getActivity()).subscribe(response -> {
+                serverPhotoPaths.add(response);
+                Log.d("uriList",serverPhotoPaths.toString());
+            });
+        }else {
+            presenter.onSendMessage(messageEdit, getActivity());
+        }
     }
 
     public void updateLastVisibleMessage(Messages message) {

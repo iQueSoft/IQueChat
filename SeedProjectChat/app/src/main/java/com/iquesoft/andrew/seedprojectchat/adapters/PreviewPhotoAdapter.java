@@ -2,7 +2,6 @@ package com.iquesoft.andrew.seedprojectchat.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +11,10 @@ import android.widget.ImageView;
 
 import com.iquesoft.andrew.seedprojectchat.R;
 
+import java.io.File;
 import java.util.List;
+
+import id.zelory.compressor.Compressor;
 
 /**
  * Created by andru on 10/24/2016.
@@ -20,8 +22,8 @@ import java.util.List;
 
 public class PreviewPhotoAdapter extends RecyclerView.Adapter<PreviewPhotoAdapter.ViewHolder> {
 
-    List<String> uriFileList;
-    Context context;
+    private List<String> uriFileList;
+    private Context context;
 
     public PreviewPhotoAdapter(List<String> uriFileList, Context context){
         this.uriFileList = uriFileList;
@@ -36,10 +38,9 @@ public class PreviewPhotoAdapter extends RecyclerView.Adapter<PreviewPhotoAdapte
 
     @Override
     public void onBindViewHolder(PreviewPhotoAdapter.ViewHolder holder, int position) {
-        Bitmap bm = BitmapFactory.decodeFile(uriFileList.get(position));
-        holder.userPhoto.setImageBitmap(bm);
-        //Uri uri = Uri.parse(uriFileList.get(position));
-        //Picasso.with(context).load(uri).resize(100, 100).placeholder(R.drawable.placeholder).error(R.drawable.error).into(holder.userPhoto);
+        File image = new File(uriFileList.get(position));
+        Bitmap compressedImageBitmap = Compressor.getDefault(context).compressToBitmap(image);
+        holder.userPhoto.setImageBitmap(compressedImageBitmap);
     }
 
     @Override
