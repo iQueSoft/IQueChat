@@ -27,7 +27,9 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFr
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -69,6 +71,8 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
     private ArrayList<String> photoPaths;
     private ArrayList<String> serverPhotoPaths = new ArrayList<>();
     private ArrayList<String> docPaths;
+    private ArrayList<String> serverDocPaths = new ArrayList<>();
+
 
     @Nullable
     @Override
@@ -104,10 +108,36 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
         if (photoPaths != null){
             presenter.getAndCompressImageWithUri(photoPaths,getActivity()).subscribe(response -> {
                 serverPhotoPaths.add(response);
-                Log.d("uriList",serverPhotoPaths.toString());
+                if (serverPhotoPaths.size() == photoPaths.size()){
+                    photoPaths.clear();
+                    Map<String, String> messageMap = new HashMap<>();
+                    messageMap.put("message", messageEdit.getText().toString());
+                    for (int i = 0; i<serverPhotoPaths.size(); i++){
+                        String imageUri = serverPhotoPaths.get(i);
+                        messageMap.put("image"+i, imageUri);
+                    }
+                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                }
             });
-        }else {
-            presenter.onSendMessage(messageEdit, getActivity());
+        }else if (docPaths != null){
+           serverDocPaths.clear();
+            presenter.uploadFilesToServer(docPaths, getActivity()).subscribe(response -> {
+                serverDocPaths.add(response);
+                if (serverDocPaths.size() == docPaths.size()){
+                    Map<String, String> messageMap = new HashMap<>();
+                    messageMap.put("message", messageEdit.getText().toString());
+                    for (int i = 0; i<serverDocPaths.size(); i++){
+                        String imageUri = serverDocPaths.get(i);
+                        messageMap.put("document"+i, imageUri);
+                    }
+                    Log.d("document", serverDocPaths.toString());
+                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                }
+            });
+        } else {
+            Map<String, String> messageMap = new HashMap<>();
+            messageMap.put("message", messageEdit.getText().toString());
+            presenter.onSendMessage(messageEdit,messageMap, getActivity());
         }
     }
 

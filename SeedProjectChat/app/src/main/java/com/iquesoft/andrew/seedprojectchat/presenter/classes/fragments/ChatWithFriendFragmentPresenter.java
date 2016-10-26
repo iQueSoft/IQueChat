@@ -1,7 +1,6 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -31,7 +30,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,8 +80,6 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
             Date date = new Date(response.getTimestamp());
             messages.setTimestamp(date);
             messages.setPublisher_id(response.getPublisherId());
-            Map<String, String> mm = splitToMap(response.getData().toString(), ", ", "=");
-            Log.d("mm", mm.get("message"));
             messages.setData(response.getData().toString());
             messages.setMessage_id(response.getMessageId());
             return Observable.just(messages);
@@ -96,18 +92,6 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
             getViewState().updateLastVisibleMessage(response);
         });
         super.attachView(view);
-    }
-
-    public static Map<String, String> splitToMap(String source, String entriesSeparator, String keyValueSeparator) {
-        Map<String, String> map = new HashMap<String, String>();
-        String[] entries = source.replace("{", "").replace("}","").split(entriesSeparator);
-        for (String entry : entries) {
-            if (!TextUtils.isEmpty(entry) && entry.contains(keyValueSeparator)) {
-                String[] keyValue = entry.split(keyValueSeparator);
-                map.put(keyValue[0], keyValue[1]);
-            }
-        }
-        return map;
     }
 
     @Override
@@ -145,19 +129,10 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
             });
     }
 
-    @Override
-    public boolean onSendMessage(EditText messageField, Context context) {
-        String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(messageField.getText().toString());
-        Message message = new Message();
-        Long tsLong = System.currentTimeMillis()/1000;
-        message.setTimestamp(tsLong);
-        message.setData(toServerUnicodeEncoded);
-        message.setPublisherId(Backendless.UserService.CurrentUser().getUserId());
-        Map<String, String> map = new HashMap<>();
-        map.put("message", toServerUnicodeEncoded);
-        map.put("image", "imgURI");
+    public boolean onSendMessage(EditText messageField, Map<String, String> message,  Context context) {
+        String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(message.toString());
         Thread sendThread = new Thread(() -> {
-            Backendless.Messaging.publish(friends.getObjectId(), map, publishOptions, new DefaultBackendlessCallback<MessageStatus>(context) {
+            Backendless.Messaging.publish(friends.getObjectId(), toServerUnicodeEncoded, publishOptions, new DefaultBackendlessCallback<MessageStatus>(context) {
                 @Override
                 public void handleResponse(MessageStatus response) {
                     super.handleResponse(response);
@@ -214,5 +189,24 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
         return ps;
     }
 
+    public PublishSubject<String> uploadFilesToServer(List<String> uriList, Context context){
+        ArrayList<File> documentList = new ArrayList<>();
+        for (String uri : uriList){
+            File file = new File(uri);
+            documentList.add(file);
+        }
+
+        PublishSubject<String> ps = PublishSubject.create();
+            for (File file : documentList){
+                Backendless.Files.upload(file, Backendless.UserService.CurrentUser().getEmail() + "_send_files", true, new BackendlessCallback<BackendlessFile>() {
+                    @Override
+                    public void handleResponse(BackendlessFile backendlessFile) {
+                        ps.onNext(backendlessFile.getFileURL());
+                    }
+                });
+            }
+
+        return ps;
+    }
 
 }
