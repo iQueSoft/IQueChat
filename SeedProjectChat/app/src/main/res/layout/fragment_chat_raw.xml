@@ -48,6 +48,11 @@
                     android:layout_gravity="center"
                     android:gravity="fill_vertical|center_horizontal" />
 
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recycler_added_data"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
             </LinearLayout>
 
             <com.mikhaellopez.circularimageview.CircularImageView
