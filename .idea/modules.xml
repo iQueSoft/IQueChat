@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SeedProgectChat.iml" filepath="$PROJECT_DIR$/.idea/SeedProgectChat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SeedProjectChat/app/src/androidTest/androidTest.iml" filepath="$PROJECT_DIR$/SeedProjectChat/app/src/androidTest/androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SeedProjectChat/app/src/main/main.iml" filepath="$PROJECT_DIR$/SeedProjectChat/app/src/main/main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SeedProjectChat/app/src/test/test.iml" filepath="$PROJECT_DIR$/SeedProjectChat/app/src/test/test.iml" />
     </modules>
   </component>
 </project>

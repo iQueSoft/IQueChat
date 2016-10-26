@@ -257,6 +257,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             ft.addToBackStack(backStateName);
             ft.commit();
+        } else {
+            FragmentTransaction ft = manager.beginTransaction();
+            ft.replace(R.id.container, fragment, fragmentTag);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.commit();
         }
 
     }
