@@ -2,6 +2,7 @@ package com.iquesoft.andrew.seedprojectchat.adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,12 +16,14 @@ import com.backendless.async.callback.BackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
+import com.iquesoft.andrew.seedprojectchat.util.StringToMapUtils;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 import io.github.rockerhieu.emojicon.EmojiconTextView;
 import rx.Observable;
@@ -63,7 +66,17 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
     @Override
     public void onBindViewHolder(ChatFragmentAdapter.ViewHolder holder, int position) {
         Messages messages = messageList.get(position);
-        holder.txtMessage.setText(StringEscapeUtils.unescapeJava(messages.getData()));
+        Map<String, String> messageMap = StringToMapUtils.splitToMap(StringEscapeUtils.unescapeJava(messages.getData()), ", ", "=");
+        if (messageMap.containsKey("message")){
+            holder.txtMessage.setText(messageMap.get("message"));
+            messageMap.remove("message");
+            if (messageMap.size() != 0){
+                setMessageImage(holder, messageMap);
+            }
+        } else {
+            setMessageImage(holder, messageMap);
+        }
+
         if (messages.getTimestamp() != null){
             holder.txtInfo.setText(messages.getTimestamp().toString());
 
@@ -77,7 +90,13 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
                 }
             });
         }
+    }
 
+    public void setMessageImage(ChatFragmentAdapter.ViewHolder holder, Map<String, String> messageImageMap){
+        MessageDataAdapter adapter = new MessageDataAdapter(messageImageMap, context);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        holder.recyclerView.setLayoutManager(layoutManager);
+        holder.recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -110,9 +129,11 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
         LinearLayout content;
         LinearLayout contentWithBG;
         CircularImageView cimUserImage;
+        RecyclerView recyclerView;
 
         ViewHolder(View itemView) {
             super(itemView);
+            recyclerView = (RecyclerView) itemView.findViewById(R.id.recycler_added_data);
             txtMessage = (EmojiconTextView) itemView.findViewById(R.id.txtMessage);
             content = (LinearLayout) itemView.findViewById(R.id.content);
             contentWithBG = (LinearLayout) itemView.findViewById(R.id.contentWithBackground);
