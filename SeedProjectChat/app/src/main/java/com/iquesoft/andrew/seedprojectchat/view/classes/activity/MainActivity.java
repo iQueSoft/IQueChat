@@ -1,5 +1,6 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,6 +33,8 @@ import com.iquesoft.andrew.seedprojectchat.di.components.ISeedProjectChatCompone
 import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.DownloadTask;
+import com.iquesoft.andrew.seedprojectchat.util.SelectedUri;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatWithFriendFragment;
@@ -43,12 +46,17 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.TermsAndCondit
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
+import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryCancelEvent;
+import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryChosenEvent;
+import com.turhanoz.android.reactivedirectorychooser.ui.OnDirectoryChooserFragmentInteraction;
+
+import java.io.File;
 
 import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 
-public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, IMainActivity, IHasComponent<IMainActivityComponent> {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, IMainActivity, IHasComponent<IMainActivityComponent>, OnDirectoryChooserFragmentInteraction {
 
     private IMainActivityComponent mainActivityComponent;
 
@@ -82,6 +90,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     CircularImageView headerImage;
     TextView userName;
     TextView userEMail;
+
+    ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +132,28 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Toast.makeText(getBaseContext(), fault.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
+        // instantiate it within the onCreate method
+        mProgressDialog = new ProgressDialog(MainActivity.this);
+        mProgressDialog.setMessage("Load...");
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setCancelable(true);
+    }
+
+    @Override
+    public void onEvent(OnDirectoryChosenEvent event) {
+        File directoryChosenByUser = event.getFile();
+        Log.d("choice_puth", directoryChosenByUser.getAbsolutePath());
+        // execute this when the downloader must be fired
+        String fileName = SelectedUri.getInstance().getUri().substring(SelectedUri.getInstance().getUri().lastIndexOf('/')+1, SelectedUri.getInstance().getUri().length());
+        final DownloadTask downloadTask = new DownloadTask(MainActivity.this, directoryChosenByUser.getAbsolutePath()+ "/" + fileName, mProgressDialog);
+        downloadTask.execute(SelectedUri.getInstance().getUri());
+        //mProgressDialog.setOnCancelListener(dialog -> downloadTask.cancel(true));
+    }
+
+    @Override
+    public void onEvent(OnDirectoryCancelEvent event) {
     }
 
     @Override

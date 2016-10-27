@@ -12,7 +12,6 @@ import com.backendless.BackendlessCollection;
 import com.backendless.Subscription;
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
-import com.backendless.files.BackendlessFile;
 import com.backendless.messaging.Message;
 import com.backendless.messaging.PublishOptions;
 import com.backendless.messaging.SubscriptionOptions;
@@ -27,13 +26,10 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFr
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import id.zelory.compressor.Compressor;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -96,8 +92,16 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
 
     @Override
     public void detachView(IChatWithFriendFragment view) {
-        subscription.cancelSubscription();
-        subscribeUpdateNewMessages.unsubscribe();
+        try {
+            subscription.cancelSubscription();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try {
+            subscribeUpdateNewMessages.unsubscribe();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
         super.detachView(view);
     }
 
@@ -163,50 +167,6 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
                         });
             }
         });
-    }
-
-    public PublishSubject<String> getAndCompressImageWithUri(List<String> uriList, Context context){
-        ArrayList<File> compressedImageFile = new ArrayList<>();
-        for (String uri : uriList){
-            File image = new File(uri);
-            File compressedImage = Compressor.getDefault(context).compressToFile(image);
-            compressedImageFile.add(compressedImage);
-        }
-        PublishSubject<String> ps = PublishSubject.create();
-        if (compressedImageFile.size() == uriList.size()){
-            ArrayList<String> serverUriList = new ArrayList<>();
-            for (File file : compressedImageFile){
-                Backendless.Files.upload(file, Backendless.UserService.CurrentUser().getEmail() + "_send_images", true, new BackendlessCallback<BackendlessFile>() {
-                    @Override
-                    public void handleResponse(BackendlessFile backendlessFile) {
-                        serverUriList.add(backendlessFile.getFileURL());
-                        ps.onNext(backendlessFile.getFileURL());
-                    }
-                });
-            }
-        }
-
-        return ps;
-    }
-
-    public PublishSubject<String> uploadFilesToServer(List<String> uriList, Context context){
-        ArrayList<File> documentList = new ArrayList<>();
-        for (String uri : uriList){
-            File file = new File(uri);
-            documentList.add(file);
-        }
-
-        PublishSubject<String> ps = PublishSubject.create();
-            for (File file : documentList){
-                Backendless.Files.upload(file, Backendless.UserService.CurrentUser().getEmail() + "_send_files", true, new BackendlessCallback<BackendlessFile>() {
-                    @Override
-                    public void handleResponse(BackendlessFile backendlessFile) {
-                        ps.onNext(backendlessFile.getFileURL());
-                    }
-                });
-            }
-
-        return ps;
     }
 
 }

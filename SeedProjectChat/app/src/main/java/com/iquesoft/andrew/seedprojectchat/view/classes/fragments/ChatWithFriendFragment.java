@@ -23,6 +23,7 @@ import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.ChatWithFriendFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.UploadFileUtil;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFriendFragment;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
@@ -65,12 +66,13 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
 
 
     private ChatFragmentAdapter adapter;
+    private PreviewPhotoAdapter previewPhotoAdapter;
     private View rootView;
     private Friends friend;
     private Boolean emjFlag = false;
-    private ArrayList<String> photoPaths;
+    private ArrayList<String> photoPaths = new ArrayList<>();
     private ArrayList<String> serverPhotoPaths = new ArrayList<>();
-    private ArrayList<String> docPaths;
+    private ArrayList<String> docPaths = new ArrayList<>();
     private ArrayList<String> serverDocPaths = new ArrayList<>();
 
 
@@ -105,8 +107,8 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
     @OnClick(R.id.chatSendButton)
     public void sendClick() {
         serverPhotoPaths.clear();
-        if (photoPaths != null){
-            presenter.getAndCompressImageWithUri(photoPaths,getActivity()).subscribe(response -> {
+        if (photoPaths.size() != 0){
+            UploadFileUtil.getAndCompressImageWithUri(photoPaths,getActivity()).subscribe(response -> {
                 serverPhotoPaths.add(response);
                 if (serverPhotoPaths.size() == photoPaths.size()){
                     photoPaths.clear();
@@ -117,11 +119,12 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
                         messageMap.put("image"+i, imageUri);
                     }
                     presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                    previewPhotoAdapter.clear();
                 }
             });
-        }else if (docPaths != null){
+        }else if (docPaths.size() != 0){
            serverDocPaths.clear();
-            presenter.uploadFilesToServer(docPaths, getActivity()).subscribe(response -> {
+            UploadFileUtil.uploadFilesToServer(docPaths, getActivity()).subscribe(response -> {
                 serverDocPaths.add(response);
                 if (serverDocPaths.size() == docPaths.size()){
                     Map<String, String> messageMap = new HashMap<>();
@@ -132,6 +135,7 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
                     }
                     Log.d("document", serverDocPaths.toString());
                     presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                    previewPhotoAdapter.clear();
                 }
             });
         } else {
@@ -147,7 +151,7 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
     }
 
     public void setUserAdapter(List<Messages> messagesList) {
-        adapter = new ChatFragmentAdapter(messagesList, getActivity());
+        adapter = new ChatFragmentAdapter(messagesList, getActivity(), getActivity().getSupportFragmentManager());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setReverseLayout(true);
         recyclerMessages.setLayoutManager(linearLayoutManager);
@@ -185,12 +189,12 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
         dialog.show();
     }
 
-    public void rvPreview(List<String> uriList){
-        PreviewPhotoAdapter adapter = new PreviewPhotoAdapter(uriList, getActivity());
+    public void rvPreview(List<String> uriList, Boolean isPhoto){
+        previewPhotoAdapter = new PreviewPhotoAdapter(uriList, getActivity(), isPhoto);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerPhotoPreview.setLayoutManager(layoutManager);
-        recyclerPhotoPreview.setAdapter(adapter);
+        recyclerPhotoPreview.setAdapter(previewPhotoAdapter);
     }
 
     public void documentSelector() {
@@ -218,7 +222,7 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
                 {
                     photoPaths = new ArrayList<>();
                     photoPaths.addAll(data.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_PHOTOS));
-                    rvPreview(photoPaths);
+                    rvPreview(photoPaths, true);
                 }
                 break;
             case FilePickerConst.REQUEST_CODE_DOC:
@@ -226,6 +230,7 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
                 {
                     docPaths = new ArrayList<>();
                     docPaths.addAll(data.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS));
+                    rvPreview(docPaths, false);
                     Log.d("file", docPaths.toString());
                 }
                 break;
