@@ -24,8 +24,10 @@ public class PreviewPhotoAdapter extends RecyclerView.Adapter<PreviewPhotoAdapte
 
     private List<String> uriFileList;
     private Context context;
+    public Boolean photoFlag;
 
-    public PreviewPhotoAdapter(List<String> uriFileList, Context context){
+    public PreviewPhotoAdapter(List<String> uriFileList, Context context, Boolean photoFlag){
+        this.photoFlag = photoFlag;
         this.uriFileList = uriFileList;
         this.context = context;
     }
@@ -38,9 +40,15 @@ public class PreviewPhotoAdapter extends RecyclerView.Adapter<PreviewPhotoAdapte
 
     @Override
     public void onBindViewHolder(PreviewPhotoAdapter.ViewHolder holder, int position) {
-        File image = new File(uriFileList.get(position));
-        Bitmap compressedImageBitmap = Compressor.getDefault(context).compressToBitmap(image);
-        holder.userPhoto.setImageBitmap(compressedImageBitmap);
+        if (photoFlag){
+            File image = new File(uriFileList.get(position));
+            Bitmap compressedImageBitmap = Compressor.getDefault(context).compressToBitmap(image);
+            holder.userPhoto.setImageBitmap(compressedImageBitmap);
+            holder.userPhoto.setOnClickListener(v -> remove(position));
+        } else {
+            holder.userPhoto.setImageDrawable(context.getResources().getDrawable(R.drawable.document));
+            holder.userPhoto.setOnClickListener(v -> remove(position));
+        }
     }
 
     @Override
@@ -58,6 +66,11 @@ public class PreviewPhotoAdapter extends RecyclerView.Adapter<PreviewPhotoAdapte
             userPhoto = (ImageView) itemView.findViewById(R.id.image);
             buttonDelete = (ImageButton) itemView.findViewById(R.id.button_delete);
         }
+    }
+
+    public void clear(){
+        uriFileList.clear();
+        notifyDataSetChanged();
     }
 
     // Insert a new item to the RecyclerView

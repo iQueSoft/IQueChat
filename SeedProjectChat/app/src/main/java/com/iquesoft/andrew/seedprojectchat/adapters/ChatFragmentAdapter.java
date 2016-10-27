@@ -2,6 +2,7 @@ package com.iquesoft.andrew.seedprojectchat.adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,6 +23,7 @@ import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,14 +42,16 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
 
     private List<Messages> messageList;
     private Context context;
+    private FragmentManager fragmentManager;
 
     public List<Messages> getMessageList() {
         return messageList;
     }
 
-    public ChatFragmentAdapter(List<Messages> messageList, Context context) {
+    public ChatFragmentAdapter(List<Messages> messageList, Context context, FragmentManager fragmentManager) {
+        this.fragmentManager = fragmentManager;
         this.messageList = null;
-        this.messageList = messageList;
+        this.messageList = new ArrayList<>(messageList);
         this.context = context;
     }
 
@@ -93,7 +97,7 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
     }
 
     public void setMessageImage(ChatFragmentAdapter.ViewHolder holder, Map<String, String> messageImageMap){
-        MessageDataAdapter adapter = new MessageDataAdapter(messageImageMap, context);
+        MessageDataAdapter adapter = new MessageDataAdapter(messageImageMap, context, fragmentManager);
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         holder.recyclerView.setLayoutManager(layoutManager);
         holder.recyclerView.setAdapter(adapter);

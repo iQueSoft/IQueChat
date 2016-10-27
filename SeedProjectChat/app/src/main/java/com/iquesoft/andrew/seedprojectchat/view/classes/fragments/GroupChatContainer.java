@@ -81,7 +81,7 @@ public class GroupChatContainer extends BaseFragment implements IGroupChatContai
 
 
     public void setGroupChatContainerAdapter(List<GroupChat> groupChatList) {
-        groupChatContainerAdapter = new GroupChatContainerAdapter(groupChatList, getActivity());
+        groupChatContainerAdapter = new GroupChatContainerAdapter(groupChatList, getActivity(), getActivity().getSupportFragmentManager());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerGroupChat.setLayoutManager(linearLayoutManager);
         recyclerGroupChat.setItemAnimator(new ScaleInAnimator(new OvershootInterpolator(1f)));

@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
@@ -40,10 +41,10 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatF
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -263,8 +264,8 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
         myThread.start();
     }
 
-    public boolean onSendMessage(EditText messageField) throws UnsupportedEncodingException {
-        String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(messageField.getText().toString());
+    public boolean onSendMessage(EditText messageField, Map<String, String> message, Context context) {
+        String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(message.toString());
         Thread sendThread = new Thread(() -> {
             Backendless.Messaging.publish(curentGroupChat.getObjectId(),toServerUnicodeEncoded , publishOptions, new BackendlessCallback<MessageStatus>() {
                 @Override
@@ -274,7 +275,7 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
                     if (messageStatus == PublishStatusEnum.SCHEDULED) {
                         messageField.setText("");
                     } else {
-                        Log.d("fail", response.toString());
+                        Toast.makeText(context, "Message status: " + messageStatus.toString(), Toast.LENGTH_SHORT).show();
                     }
                 }
             });
