@@ -3,6 +3,8 @@ package com.iquesoft.andrew.seedprojectchat.adapters;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,12 +15,14 @@ import com.backendless.BackendlessUser;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
+import com.iquesoft.andrew.seedprojectchat.util.StringToMapUtils;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 import io.github.rockerhieu.emojicon.EmojiconTextView;
 import rx.Observable;
@@ -33,11 +37,14 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
 
     private List<GroupChat> groupChatList;
     private Context context;
+    private FragmentManager fragmentManager;
 
-    public GroupChatContainerAdapter(@NonNull List<GroupChat> groupChatList, Context context){
+    public GroupChatContainerAdapter(@NonNull List<GroupChat> groupChatList, Context context, FragmentManager fragmentManager){
         this.context = context;
         this.groupChatList = groupChatList;
+        this.fragmentManager = fragmentManager;
     }
+
     @Override
     public GroupChatContainerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_group_chat_container_raw, parent, false);
@@ -82,7 +89,16 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
                         .flatMap(Observable::from)
                         .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
                         .subscribe(response -> {
-                            holder.tvLastMessage.setText(StringEscapeUtils.unescapeJava(response.get(0).getData()));
+                            Map<String, String> message = StringToMapUtils.splitToMap(StringEscapeUtils.unescapeJava(response.get(0).getData()),", ", "=");
+                            if (message.containsKey("message")){
+                                holder.tvLastMessage.setText(message.get("message"));
+                                message.remove("message");
+                                if (message.size() != 0){
+                                    setMessageImage(holder, message);
+                                }
+                            } else {
+                                setMessageImage(holder, message);
+                            }
                             holder.tvLastMessageDate.setText(response.get(0).getTimestamp().toString());
                         });
             }else {
@@ -91,6 +107,13 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
         } else {
             setMessageGone(holder);
         }
+    }
+
+    public void setMessageImage(GroupChatContainerAdapter.ViewHolder holder, Map<String, String> messageImageMap){
+        MessageDataAdapter adapter = new MessageDataAdapter(messageImageMap, context, fragmentManager);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        holder.recyclerView.setLayoutManager(layoutManager);
+        holder.recyclerView.setAdapter(adapter);
     }
 
     private void setMessageGone(ViewHolder viewHolder){
@@ -112,9 +135,11 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
         TextView tvChatName;
         EmojiconTextView tvLastMessage;
         TextView tvLastMessageDate;
+        RecyclerView recyclerView;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            recyclerView = (RecyclerView) itemView.findViewById(R.id.relLayout);
             cimUserImage = (CircularImageView) itemView.findViewById(R.id.cim_user_image);
             cimOnline = (CircularImageView) itemView.findViewById(R.id.cim_online);
             tvChatName = (TextView) itemView.findViewById(R.id.tv_group_chat_name);

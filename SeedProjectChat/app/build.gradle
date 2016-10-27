@@ -59,4 +59,7 @@ dependencies {
     compile 'com.android.support.test.espresso:espresso-core:2.2.2'
     compile 'com.droidninja:filepicker:1.0.6'
     compile files('backendless.jar')
+    compile ('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar'){
+        transitive=true
+    }
 }

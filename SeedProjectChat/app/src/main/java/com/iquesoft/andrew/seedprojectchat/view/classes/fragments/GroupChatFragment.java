@@ -1,7 +1,10 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -19,21 +22,27 @@ import com.backendless.Backendless;
 import com.backendless.async.callback.BackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
+import com.iquesoft.andrew.seedprojectchat.adapters.PreviewPhotoAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.GroupChatFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.UploadFileUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatFragment;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
-import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import droidninja.filepicker.FilePickerBuilder;
+import droidninja.filepicker.FilePickerConst;
 import io.github.rockerhieu.emojicon.EmojiconEditText;
 import io.github.rockerhieu.emojicon.EmojiconGridFragment;
 import io.github.rockerhieu.emojicon.EmojiconsFragment;
@@ -58,12 +67,19 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     SwipyRefreshLayout swipeRefreshMessage;
     @BindView(R.id.emj_container)
     FrameLayout emojiContainer;
+    @BindView(R.id.scroll_files)
+    RecyclerView recyclerPhotoPreview;
 
+    private PreviewPhotoAdapter previewPhotoAdapter;
     private Boolean emjFlag = false;
     private MainActivity mainActivity;
     private ChatFragmentAdapter adapter;
     private GroupChat curentGroupChat;
     private View rootView;
+    private ArrayList<String> photoPaths = new ArrayList<>();
+    private ArrayList<String> serverPhotoPaths = new ArrayList<>();
+    private ArrayList<String> docPaths = new ArrayList<>();
+    private ArrayList<String> serverDocPaths = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -100,15 +116,102 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
                 .commit();
     }
 
+    @OnClick(R.id.button_choice_image)
+    public void choiceImgClick() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setPositiveButton("Photo", (dialog, which) -> photoSelector())
+                .setNegativeButton("Documents", (dialog, which) -> documentSelector());
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(true);
+        dialog.show();
+    }
 
+    public void rvPreview(List<String> uriList, Boolean isPhoto){
+        previewPhotoAdapter = new PreviewPhotoAdapter(uriList, getActivity(), isPhoto);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        recyclerPhotoPreview.setLayoutManager(layoutManager);
+        recyclerPhotoPreview.setAdapter(previewPhotoAdapter);
+    }
 
+    public void documentSelector() {
+        ArrayList<String> ll = new ArrayList<>();
+        FilePickerBuilder.getInstance().setMaxCount(10)
+                .setSelectedFiles(ll)
+                .setActivityTheme(R.style.MyTheme)
+                .pickDocument(this);
+    }
+
+    public void photoSelector() {
+        ArrayList<String> ll = new ArrayList<>();
+        FilePickerBuilder.getInstance().setMaxCount(10)
+                .setSelectedFiles(ll)
+                .setActivityTheme(R.style.MyTheme)
+                .pickPhoto(this);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode)
+        {
+            case FilePickerConst.REQUEST_CODE_PHOTO:
+                if(resultCode== Activity.RESULT_OK && data!=null)
+                {
+                    photoPaths = new ArrayList<>();
+                    photoPaths.addAll(data.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_PHOTOS));
+                    rvPreview(photoPaths, true);
+                }
+                break;
+            case FilePickerConst.REQUEST_CODE_DOC:
+                if(resultCode== Activity.RESULT_OK && data!=null)
+                {
+                    docPaths = new ArrayList<>();
+                    docPaths.addAll(data.getStringArrayListExtra(FilePickerConst.KEY_SELECTED_DOCS));
+                    rvPreview(docPaths, false);
+                    Log.d("file", docPaths.toString());
+                }
+                break;
+        }
+    }
 
     @OnClick(R.id.chatSendButton)
     public void sendClick (){
-        try {
-            presenter.onSendMessage(messageEdit);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        serverPhotoPaths.clear();
+        if (photoPaths.size() != 0){
+            UploadFileUtil.getAndCompressImageWithUri(photoPaths,getActivity()).subscribe(response -> {
+                serverPhotoPaths.add(response);
+                if (serverPhotoPaths.size() == photoPaths.size()){
+                    photoPaths.clear();
+                    Map<String, String> messageMap = new HashMap<>();
+                    messageMap.put("message", messageEdit.getText().toString());
+                    for (int i = 0; i<serverPhotoPaths.size(); i++){
+                        String imageUri = serverPhotoPaths.get(i);
+                        messageMap.put("image"+i, imageUri);
+                    }
+                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                    previewPhotoAdapter.clear();
+                }
+            });
+        }else if (docPaths.size() != 0){
+            serverDocPaths.clear();
+            UploadFileUtil.uploadFilesToServer(docPaths, getActivity()).subscribe(response -> {
+                serverDocPaths.add(response);
+                if (serverDocPaths.size() == docPaths.size()){
+                    Map<String, String> messageMap = new HashMap<>();
+                    messageMap.put("message", messageEdit.getText().toString());
+                    for (int i = 0; i<serverDocPaths.size(); i++){
+                        String imageUri = serverDocPaths.get(i);
+                        messageMap.put("document"+i, imageUri);
+                    }
+                    Log.d("document", serverDocPaths.toString());
+                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                    previewPhotoAdapter.clear();
+                }
+            });
+        } else {
+            Map<String, String> messageMap = new HashMap<>();
+            messageMap.put("message", messageEdit.getText().toString());
+            presenter.onSendMessage(messageEdit,messageMap, getActivity());
         }
     }
 
@@ -181,7 +284,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
 
     @Override
     public void setMessageAdapter(List<Messages> messages) {
-        adapter = new ChatFragmentAdapter(messages, getActivity());
+        adapter = new ChatFragmentAdapter(messages, getActivity(), getActivity().getSupportFragmentManager());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setReverseLayout(true);
         recyclerMessages.setLayoutManager(linearLayoutManager);
