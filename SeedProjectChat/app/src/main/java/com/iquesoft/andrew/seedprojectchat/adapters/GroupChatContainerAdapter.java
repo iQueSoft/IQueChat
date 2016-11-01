@@ -112,6 +112,7 @@ public class GroupChatContainerAdapter extends RecyclerView.Adapter<GroupChatCon
     public void setMessageImage(GroupChatContainerAdapter.ViewHolder holder, Map<String, String> messageImageMap){
         MessageDataAdapter adapter = new MessageDataAdapter(messageImageMap, context, fragmentManager);
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         holder.recyclerView.setLayoutManager(layoutManager);
         holder.recyclerView.setAdapter(adapter);
     }

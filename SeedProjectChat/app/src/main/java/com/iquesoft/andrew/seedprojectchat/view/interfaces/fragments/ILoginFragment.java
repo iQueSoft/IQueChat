@@ -1,17 +1,13 @@
 package com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments;
 
-import android.content.Context;
-
-import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
-import com.iquesoft.andrew.seedprojectchat.view.classes.activity.LoginActivity;
+import com.arellomobile.mvp.MvpView;
+import com.backendless.BackendlessUser;
 
 /**
  * Created by Andrew on 17.08.2016.
  */
 
-public interface ILoginFragment {
-    Context getActivityContext();
-    LoginActivity getLoginActivity();
+public interface ILoginFragment extends MvpView {
     void showProgress(final boolean show);
-    UpdateCurentUser getUpdateCurentUser();
+    void setCurentUser(BackendlessUser loggedInUser);
 }
