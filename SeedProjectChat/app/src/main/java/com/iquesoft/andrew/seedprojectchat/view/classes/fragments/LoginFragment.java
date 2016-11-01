@@ -3,13 +3,14 @@ package com.iquesoft.andrew.seedprojectchat.view.classes.fragments;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +20,16 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
+import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
@@ -33,6 +42,11 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.activity.LoginActivity;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ILoginFragment;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import butterknife.BindView;
@@ -43,8 +57,8 @@ import butterknife.OnClick;
  * Created by Andrew on 17.08.2016.
  */
 
-public class LoginFragment extends BaseFragment implements ILoginFragment {
-    @Inject
+public class LoginFragment extends BaseFragment implements ILoginFragment, GoogleApiClient.OnConnectionFailedListener {
+    @InjectPresenter
     LoginFragmentPresenter presenter;
     @Inject
     ValidateUtil validateUtil;
@@ -64,11 +78,51 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
 
     private View rootView;
     private LoginActivity loginActivity;
+    private GoogleSignInOptions gSignInOptions;
+    private GoogleApiClient gApiClient;
+    private final int SIGN_IN_INTENT_ID = 1;
+    private String TAG = "google+";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         autoLogin();
+        gSignInOptions = new GoogleSignInOptions.Builder( GoogleSignInOptions.DEFAULT_SIGN_IN )
+                .requestEmail().requestProfile().requestId().requestIdToken( "102599222640-d9omj04c5tvnhgdk72n75de38t1epegt.apps.googleusercontent.com" )
+                .build();
+
+        // Build a GoogleApiClient with access to GoogleSignIn.API and the options above.
+        GoogleApiClient.Builder apiCliBuilder = new GoogleApiClient.Builder( getActivity() );
+        gApiClient = apiCliBuilder
+                .enableAutoManage( getActivity(), this )
+                .addApi( Auth.GOOGLE_SIGN_IN_API, gSignInOptions ).build();
+    }
+
+    @Override
+    public void onActivityResult( int requestCode, int resultCode, Intent data )
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if( requestCode == SIGN_IN_INTENT_ID)
+        {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
+            if (result.isSuccess())
+            {
+                presenter.loginInBackendless( result.getSignInAccount(), (LoginActivity) getActivity() );
+            }
+            else
+            {
+
+            }
+        }
+    }
+
+    @OnClick(R.id.but_google)
+    public void googleLogin(){
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent( gApiClient );
+        this.startActivityForResult( signInIntent, SIGN_IN_INTENT_ID );
     }
 
     @Nullable
@@ -88,12 +142,6 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
         loginActivity = (LoginActivity) getActivity();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        presenter.init(this);
-    }
-
     @OnClick(R.id.sign_in_button)
     void loginClick(View view){
         attemptLogin();
@@ -109,14 +157,9 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
         showRestorePasswordDialog();
     }
 
-    @Override
-    public UpdateCurentUser getUpdateCurentUser(){
-        return updateCurentUser;
-    }
-
     private void autoLogin(){
         Thread autoLoginThread = new Thread(() -> {
-            Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivityContext())
+            Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivity())
             {
                 @Override
                 public void handleResponse( Boolean isValidLogin )
@@ -127,29 +170,13 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
 
                         if( !currentUserId.equals( "" ) )
                         {
-                            Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>( getActivityContext())
+                            Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>(getActivity())
                             {
                                 @Override
                                 public void handleResponse( BackendlessUser currentUser )
                                 {
                                     super.handleResponse( currentUser );
-                                    Thread thread = new Thread(()->{
-                                        Backendless.UserService.setCurrentUser( currentUser );
-                                        String deviceId = Build.SERIAL;
-                                        if( deviceId.isEmpty() )
-                                        {
-                                            Toast.makeText( getActivity(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
-                                            return;
-                                        } else {
-                                            currentUser.setProperty(ChatUser.DEVICEID, deviceId);
-                                            currentUser.setProperty(ChatUser.ONLINE, true);
-                                            updateCurentUser.update(currentUser, getActivity());
-                                        }
-                                    });
-                                    thread.start();
-                                    startActivity(new Intent(getActivityContext(), MainActivity.class));
-                                    showProgress(false);
-                                    loginActivity.finish();
+                                    setCurentUser(currentUser);
                                 }
                             } );
                         }
@@ -206,9 +233,72 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            presenter.onLoginButtonClicked(mEmailView.getText().toString(), mPasswordView.getText().toString(), rememberPassword.isChecked());
+            presenter.onLoginButtonClicked(mEmailView.getText().toString(), mPasswordView.getText().toString(), rememberPassword.isChecked(), (LoginActivity) getActivity(), updateCurentUser);
         }
     }
+
+    @OnClick(R.id.but_facebook)
+    public void loginWithFacebook(){
+        Map<String, String> facebookFieldMappings = new HashMap<String, String>();
+        facebookFieldMappings.put( "email", "fb_email" );
+
+        List<String> permissions = new ArrayList<String>();
+        permissions.add( "email" );
+        Backendless.UserService.loginWithFacebook( getActivity(), new AsyncCallback<BackendlessUser>()
+        {
+            @Override
+            public void handleResponse( BackendlessUser loggedInUser )
+            {
+                setCurentUser(loggedInUser);
+            }
+
+            @Override
+            public void handleFault( BackendlessFault fault )
+            {
+                // failed to log in
+            }
+        } );
+    }
+
+    @OnClick(R.id.but_twitter)
+    public void loginWithTwitter(){
+        Backendless.UserService.loginWithTwitter(getActivity(), new AsyncCallback<BackendlessUser>()
+        {
+            @Override
+            public void handleResponse( BackendlessUser loggedInUser )
+            {
+                setCurentUser(loggedInUser);
+            }
+
+            @Override
+            public void handleFault( BackendlessFault fault )
+            {
+                // failed to log in
+            }
+        } );
+    }
+
+    public void setCurentUser(BackendlessUser loggedInUser){
+        Thread thread = new Thread(()->{
+            Backendless.UserService.setCurrentUser(loggedInUser);
+            String deviceId = Build.SERIAL;
+            if( deviceId.isEmpty() )
+            {
+                Toast.makeText( getActivity(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
+                return;
+            } else {
+                loggedInUser.setProperty(ChatUser.DEVICEID, deviceId);
+                loggedInUser.setProperty(ChatUser.ONLINE, true);
+                updateCurentUser.update(loggedInUser, getActivity());
+            }
+        });
+        thread.start();
+        startActivity(new Intent(getActivity(), MainActivity.class));
+        showProgress(false);
+        loginActivity.finish();
+    }
+
+
 
     /**
      * Shows the progress UI and hides the login form.
@@ -237,18 +327,6 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
         }
     }
 
-
-    @Override
-    public Context getActivityContext() {
-        return getActivity();
-    }
-
-    @Override
-    public LoginActivity getLoginActivity() {
-        return loginActivity;
-    }
-
-
     private void showRestorePasswordDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -259,7 +337,7 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
         AlertDialog dialog = builder.create();
         recoveryButton.setOnClickListener(view1 -> {
             if (validateUtil.isEmailValid(restorePassword.getText().toString())){
-                presenter.onRestorePasswordButtonClicked(restorePassword.getText().toString());
+                presenter.onRestorePasswordButtonClicked(restorePassword.getText().toString(), getActivity());
                 dialog.cancel();
             } else {
                 restorePassword.setError("Incorrect eMail");
@@ -269,5 +347,10 @@ public class LoginFragment extends BaseFragment implements ILoginFragment {
         dialog.setCancelable(true);
         // display dialog
         dialog.show();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, connectionResult.toString());
     }
 }

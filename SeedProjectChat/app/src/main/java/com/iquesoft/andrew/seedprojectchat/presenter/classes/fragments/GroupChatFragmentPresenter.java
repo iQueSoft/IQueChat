@@ -116,6 +116,12 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
                 }).filter(response -> response != null).subscribe(response -> {
                     sendPushNotification(response.getData());
                     curentGroupChat.getMessages().add(response);
+                    curentGroupChat.saveAsync(new BackendlessCallback<GroupChat>() {
+                        @Override
+                        public void handleResponse(GroupChat groupChat) {
+
+                        }
+                    });
                     getViewState().showNewMessage(response);
                 });
         compositeSubscription = new CompositeSubscription(messageSubscription, sortMessage);
