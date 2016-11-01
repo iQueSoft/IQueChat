@@ -27,6 +27,7 @@ public class SeedProjectChatApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        //MultiDex.install(this);
         RealmConfiguration config = new RealmConfiguration.Builder(this).build();
         Realm.setDefaultConfiguration(config);
         buildGraphAndInject();
