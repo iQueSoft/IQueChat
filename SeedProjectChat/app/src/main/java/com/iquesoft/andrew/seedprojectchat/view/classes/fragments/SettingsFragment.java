@@ -63,8 +63,12 @@ public class SettingsFragment extends BaseFragment implements ISettingsFragment 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         curentUser = Backendless.UserService.CurrentUser();
-        Uri uri = Uri.parse(curentUser.getProperty(ChatUser.PHOTO).toString());
-        Picasso.with(getActivity()).load(uri).placeholder(R.drawable.placeholder).error(R.drawable.error).into(cimUserImage);
+        try {
+            Uri uri = Uri.parse(curentUser.getProperty(ChatUser.PHOTO).toString());
+            Picasso.with(getActivity()).load(uri).placeholder(R.drawable.placeholder).error(R.drawable.error).into(cimUserImage);
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
         etUserEmail.setText(curentUser.getEmail());
         etUsername.setText(curentUser.getProperty(ChatUser.NAME).toString());
         super.onActivityCreated(savedInstanceState);
