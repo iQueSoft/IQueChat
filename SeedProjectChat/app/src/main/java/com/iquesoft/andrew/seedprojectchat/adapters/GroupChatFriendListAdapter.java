@@ -49,8 +49,12 @@ public class GroupChatFriendListAdapter extends RecyclerView.Adapter<GroupChatFr
         } else {
             user = myFriends.getUser_one();
         }
+        try {
             Uri uri = Uri.parse(user.getProperty(ChatUser.PHOTO).toString());
             Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).error(R.drawable.button_bacground_log_in_screen).into(holder.cimUserImage);
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
             Boolean online = (Boolean) user.getProperty(ChatUser.ONLINE);
             if (online){
                 holder.online.setImageDrawable(context.getResources().getDrawable(R.drawable.online));

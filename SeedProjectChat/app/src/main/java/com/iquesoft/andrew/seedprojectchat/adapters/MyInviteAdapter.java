@@ -52,7 +52,7 @@ public class MyInviteAdapter extends RecyclerView.Adapter<MyInviteAdapter.ViewHo
             }
             holder.tvUserEMail.setText(user.getEmail());
 
-            holder.denial.setOnClickListener(view -> curentFriend.removeAsync(new DefaultBackendlessCallback<Long>(context)));
+            holder.denial.setOnClickListener(view -> curentFriend.removeAsync(new DefaultBackendlessCallback<Long>()));
         }
     }
 

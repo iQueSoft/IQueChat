@@ -28,6 +28,7 @@ import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.GroupChatFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.OnBackPressedListener;
 import com.iquesoft.andrew.seedprojectchat.util.UploadFileUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatFragment;
@@ -54,7 +55,7 @@ import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
  * Created by andru on 9/23/2016.
  */
 
-public class GroupChatFragment extends BaseFragment implements IGroupChatFragment, EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener  {
+public class GroupChatFragment extends BaseFragment implements IGroupChatFragment, EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener, OnBackPressedListener {
 
     @InjectPresenter
     GroupChatFragmentPresenter presenter;
@@ -230,7 +231,8 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
         String curentUserId = Backendless.UserService.CurrentUser().getUserId();
         menu.clear();
         inflater.inflate(R.menu.group_chat_fragment_menu, menu);
-        if (curentUserId.equals(presenter.getCurentGroupChat().getOwner().getUserId())){
+        String ownerId = presenter.getCurentGroupChat().getOwner().getUserId();
+        if (curentUserId.equals(ownerId)){
             MenuItem clearHistory = menu.findItem(R.id.action_clear_history);
             clearHistory.setVisible(true);
             menu.findItem(R.id.action_delete_chat).setVisible(true);
@@ -248,6 +250,8 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
             case R.id.action_leave:
                 presenter.liveChat(mainActivity);
                 break;
+            case R.id.action_delete_chat:
+
             case R.id.action_edit_chat:
                 presenter.createDialogGroupChat(getActivity(), getActivity().getLayoutInflater());
                 break;
@@ -302,5 +306,11 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     @Override
     public void onEmojiconBackspaceClicked(View v) {
         EmojiconsFragment.backspace(messageEdit);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        mainActivity.setGroupChatContainer();
     }
 }
