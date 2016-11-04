@@ -23,8 +23,6 @@ import android.widget.Toast;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -32,7 +30,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
-import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.di.components.ILoginActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
@@ -41,11 +38,6 @@ import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.LoginActivity;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ILoginFragment;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -86,7 +78,6 @@ public class LoginFragment extends BaseFragment implements ILoginFragment, Googl
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        autoLogin();
         gSignInOptions = new GoogleSignInOptions.Builder( GoogleSignInOptions.DEFAULT_SIGN_IN )
                 .requestEmail().requestProfile().requestId().requestIdToken( "102599222640-d9omj04c5tvnhgdk72n75de38t1epegt.apps.googleusercontent.com" )
                 .build();
@@ -96,6 +87,57 @@ public class LoginFragment extends BaseFragment implements ILoginFragment, Googl
         gApiClient = apiCliBuilder
                 .enableAutoManage( getActivity(), this )
                 .addApi( Auth.GOOGLE_SIGN_IN_API, gSignInOptions ).build();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (rootView == null) {
+            rootView = inflater.inflate(R.layout.fragment_login, container, false);
+            ButterKnife.bind(this, rootView);
+            showProgress(true);
+            presenter.autoLogin();
+        }
+        return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        this.getComponent(ILoginActivityComponent.class).inject(this);
+        loginActivity = (LoginActivity) getActivity();
+    }
+
+    @OnClick(R.id.sign_in_button)
+    void loginClick(){
+        attemptLogin();
+    }
+
+    @OnClick(R.id.email_register_button)
+    void registerClick(){
+        loginActivity.setRegisterFragment();
+    }
+
+    @OnClick(R.id.tv_recovery)
+    void recoveryClick(){
+        showRestorePasswordDialog();
+    }
+
+
+    @OnClick(R.id.but_facebook)
+    public void loginWithFacebook(){
+        presenter.loginWithFacebook((LoginActivity) getActivity());
+    }
+
+    @OnClick(R.id.but_twitter)
+    public void loginWithTwitter(){
+        presenter.loginWithTwitter((LoginActivity) getActivity(), rememberPassword.isChecked());
+    }
+
+    @OnClick(R.id.but_google)
+    public void googleLogin(){
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent( gApiClient );
+        this.startActivityForResult( signInIntent, SIGN_IN_INTENT_ID );
     }
 
     @Override
@@ -110,83 +152,13 @@ public class LoginFragment extends BaseFragment implements ILoginFragment, Googl
 
             if (result.isSuccess())
             {
-                presenter.loginInBackendless( result.getSignInAccount(), (LoginActivity) getActivity() );
+                presenter.loginInBackendless( result.getSignInAccount(), (LoginActivity) getActivity() , rememberPassword.isChecked());
             }
             else
             {
 
             }
         }
-    }
-
-    @OnClick(R.id.but_google)
-    public void googleLogin(){
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent( gApiClient );
-        this.startActivityForResult( signInIntent, SIGN_IN_INTENT_ID );
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (rootView == null) {
-            rootView = inflater.inflate(R.layout.fragment_login, container, false);
-            ButterKnife.bind(this, rootView);
-        }
-        return rootView;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        this.getComponent(ILoginActivityComponent.class).inject(this);
-        loginActivity = (LoginActivity) getActivity();
-    }
-
-    @OnClick(R.id.sign_in_button)
-    void loginClick(View view){
-        attemptLogin();
-    }
-
-    @OnClick(R.id.email_register_button)
-    void registerClick(View view){
-        loginActivity.setRegisterFragment();
-    }
-
-    @OnClick(R.id.tv_recovery)
-    void recoveryClick(View view){
-        showRestorePasswordDialog();
-    }
-
-    private void autoLogin(){
-        Thread autoLoginThread = new Thread(() -> {
-            Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>(getActivity())
-            {
-                @Override
-                public void handleResponse( Boolean isValidLogin )
-                {
-                    if( isValidLogin && Backendless.UserService.CurrentUser() == null )
-                    {
-                        String currentUserId = Backendless.UserService.loggedInUser();
-
-                        if( !currentUserId.equals( "" ) )
-                        {
-                            Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>(getActivity())
-                            {
-                                @Override
-                                public void handleResponse( BackendlessUser currentUser )
-                                {
-                                    super.handleResponse( currentUser );
-                                    setCurentUser(currentUser);
-                                }
-                            } );
-                        }
-                    }
-
-                    super.handleResponse( isValidLogin );
-                }
-            });
-        });
-        autoLoginThread.start();
     }
 
     /**
@@ -235,47 +207,6 @@ public class LoginFragment extends BaseFragment implements ILoginFragment, Googl
             showProgress(true);
             presenter.onLoginButtonClicked(mEmailView.getText().toString(), mPasswordView.getText().toString(), rememberPassword.isChecked(), (LoginActivity) getActivity(), updateCurentUser);
         }
-    }
-
-    @OnClick(R.id.but_facebook)
-    public void loginWithFacebook(){
-        Map<String, String> facebookFieldMappings = new HashMap<String, String>();
-        facebookFieldMappings.put( "email", "fb_email" );
-
-        List<String> permissions = new ArrayList<String>();
-        permissions.add( "email" );
-        Backendless.UserService.loginWithFacebook( getActivity(), new AsyncCallback<BackendlessUser>()
-        {
-            @Override
-            public void handleResponse( BackendlessUser loggedInUser )
-            {
-                setCurentUser(loggedInUser);
-            }
-
-            @Override
-            public void handleFault( BackendlessFault fault )
-            {
-                // failed to log in
-            }
-        } );
-    }
-
-    @OnClick(R.id.but_twitter)
-    public void loginWithTwitter(){
-        Backendless.UserService.loginWithTwitter(getActivity(), new AsyncCallback<BackendlessUser>()
-        {
-            @Override
-            public void handleResponse( BackendlessUser loggedInUser )
-            {
-                setCurentUser(loggedInUser);
-            }
-
-            @Override
-            public void handleFault( BackendlessFault fault )
-            {
-                // failed to log in
-            }
-        } );
     }
 
     public void setCurentUser(BackendlessUser loggedInUser){

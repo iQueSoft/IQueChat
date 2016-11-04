@@ -61,7 +61,7 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Vi
             friend.setUser_one(Backendless.UserService.CurrentUser());
             friend.setUser_two(users.get(position));
             friend.setStatus(1);
-            friend.saveAsync(new DefaultBackendlessCallback<Friends>(context){
+            friend.saveAsync(new DefaultBackendlessCallback<Friends>(){
                 @Override
                 public void handleResponse(Friends response) {
                     super.handleResponse(response);
@@ -88,7 +88,7 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Vi
 
         final String message_subtopic = friends.getUser_one().getProperty(ChatUser.NAME).toString().concat( "_with_" ).concat(friends.getUser_two().getProperty(ChatUser.NAME).toString());
 
-        Backendless.Messaging.publish( message_subtopic, publishOptions, deliveryOptions, new DefaultBackendlessCallback<MessageStatus>(context)
+        Backendless.Messaging.publish( message_subtopic, publishOptions, deliveryOptions, new DefaultBackendlessCallback<MessageStatus>()
         {
             @Override
             public void handleResponse( MessageStatus response )

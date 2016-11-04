@@ -17,7 +17,7 @@ public class UpdateCurentUser {
         Thread updateUserThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                Backendless.UserService.update(backendlessUser, new DefaultBackendlessCallback<BackendlessUser>(context){
+                Backendless.UserService.update(backendlessUser, new DefaultBackendlessCallback<BackendlessUser>(){
                     @Override
                     public void handleResponse(BackendlessUser response) {
                         super.handleResponse(response);
