@@ -54,7 +54,7 @@ public class InvateToFriendFragmentAdapter extends RecyclerView.Adapter<InvateTo
         holder.accept.setOnClickListener(view -> {
             curentFriend.setStatus(2);
             curentFriend.setSubtopic(curentFriend.getUser_one().getProperty(ChatUser.NAME) + "_with_" + curentFriend.getUser_two().getProperty(ChatUser.NAME));
-            curentFriend.saveAsync(new DefaultBackendlessCallback<Friends>(context){
+            curentFriend.saveAsync(new DefaultBackendlessCallback<Friends>(){
                 @Override
                 public void handleResponse(Friends response) {
                     super.handleResponse(response);
@@ -102,7 +102,7 @@ public class InvateToFriendFragmentAdapter extends RecyclerView.Adapter<InvateTo
 
     public void removeFromBackendless(int index){
         Friends friends = users.get(index);
-        friends.removeAsync(new DefaultBackendlessCallback<Long>(context){
+        friends.removeAsync(new DefaultBackendlessCallback<Long>(){
             @Override
             public void handleResponse(Long response) {
                 super.handleResponse(response);

@@ -15,6 +15,8 @@ import android.widget.Toast;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
+import com.arellomobile.mvp.viewstate.strategy.SkipStrategy;
+import com.arellomobile.mvp.viewstate.strategy.StateStrategyType;
 import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
 import com.backendless.BackendlessUser;
@@ -31,6 +33,7 @@ import com.backendless.services.messaging.MessageStatus;
 import com.backendless.services.messaging.PublishStatusEnum;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.GroupChatFriendListAdapter;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultsBackendlessKey;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
@@ -55,7 +58,6 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
-import rx.subscriptions.CompositeSubscription;
 
 /**
  * Created by andru on 9/23/2016.
@@ -71,7 +73,6 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     private GroupChat curentGroupChat;
     private rx.Subscription messageSubscription;
     private rx.Subscription sortMessage;
-    private CompositeSubscription compositeSubscription;
 
     public void setCurentGroupChat(GroupChat groupChat) {
         curentGroupChat = groupChat;
@@ -96,10 +97,12 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     public void attachView(IGroupChatFragment view) {
         Log.d("check", "attach");
         subscribe();
-        sortMessage = Observable.from(curentGroupChat.getMessages()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
-                .subscribe(response -> {
-                    getViewState().setMessageAdapter(response);
-                });
+        if (curentGroupChat.getMessages() != null){
+            sortMessage = Observable.from(curentGroupChat.getMessages()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
+                    .subscribe(response -> {
+                        getViewState().setMessageAdapter(response);
+                    });
+        }
         messageSubscription = messages
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
@@ -124,7 +127,6 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
                     });
                     getViewState().showNewMessage(response);
                 });
-        compositeSubscription = new CompositeSubscription(messageSubscription, sortMessage);
         Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, curentGroupChat.getObjectId());
         super.attachView(view);
     }
@@ -214,7 +216,10 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     @Override
     public void detachView(IGroupChatFragment view) {
         Log.d("check", "detach");
-        compositeSubscription.unsubscribe();
+        if (curentGroupChat.getMessages() != null){
+            sortMessage.unsubscribe();
+        }
+        messageSubscription.unsubscribe();
         try {
             subscription.cancelSubscription();
         } catch (NullPointerException e) {
@@ -223,12 +228,20 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
         super.detachView(view);
     }
 
+    @StateStrategyType(SkipStrategy.class)
     public void liveChat(MainActivity mainActivity) {
         String myId = Backendless.UserService.CurrentUser().getUserId();
         if (myId.equals(curentGroupChat.getOwnerId())) {
-            curentGroupChat.removeAsync(new BackendlessCallback<Long>() {
+            if (curentGroupChat.getUsers().size() != 0){
+                curentGroupChat.setOwner(curentGroupChat.getUsers().get(0));
+            } else {
+                curentGroupChat.setOwner(null);
+            }
+            curentGroupChat.saveAsync(new DefaultBackendlessCallback<GroupChat>(){
                 @Override
-                public void handleResponse(Long aLong) {
+                public void handleResponse(GroupChat response) {
+                    mainActivity.setGroupChatContainer();
+                    super.handleResponse(response);
                 }
             });
         } else {

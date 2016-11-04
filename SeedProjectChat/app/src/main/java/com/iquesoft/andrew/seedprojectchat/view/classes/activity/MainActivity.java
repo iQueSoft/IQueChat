@@ -34,6 +34,7 @@ import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.DownloadTask;
+import com.iquesoft.andrew.seedprojectchat.util.OnBackPressedListener;
 import com.iquesoft.andrew.seedprojectchat.util.SelectedUri;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment;
@@ -146,8 +147,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         File directoryChosenByUser = event.getFile();
         Log.d("choice_puth", directoryChosenByUser.getAbsolutePath());
         // execute this when the downloader must be fired
-        String fileName = SelectedUri.getInstance().getUri().substring(SelectedUri.getInstance().getUri().lastIndexOf('/')+1, SelectedUri.getInstance().getUri().length());
-        final DownloadTask downloadTask = new DownloadTask(MainActivity.this, directoryChosenByUser.getAbsolutePath()+ "/" + fileName, mProgressDialog);
+        String fileName = SelectedUri.getInstance().getUri().substring(SelectedUri.getInstance().getUri().lastIndexOf('/') + 1, SelectedUri.getInstance().getUri().length());
+        final DownloadTask downloadTask = new DownloadTask(MainActivity.this, directoryChosenByUser.getAbsolutePath() + "/" + fileName, mProgressDialog);
         downloadTask.execute(SelectedUri.getInstance().getUri());
         //mProgressDialog.setOnCancelListener(dialog -> downloadTask.cancel(true));
     }
@@ -191,8 +192,22 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            FragmentManager fm = getSupportFragmentManager();
+            OnBackPressedListener backPressedListener = null;
+            for (Fragment fragment : fm.getFragments()) {
+                if (fragment instanceof OnBackPressedListener) {
+                    backPressedListener = (OnBackPressedListener) fragment;
+                    break;
+                }
+            }
+
+            if (backPressedListener != null) {
+                backPressedListener.onBackPressed();
+            } else {
+                super.onBackPressed();
+            }
         }
+
     }
 
     @Override
@@ -207,23 +222,20 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         if (id == R.id.action_logout) {
-            Thread logoutThread = new Thread(() -> {
-                BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
-                backendlessUser.setProperty(ChatUser.ONLINE, false);
-                updateCurentUser.update(backendlessUser, getBaseContext());
-                Backendless.UserService.logout(new AsyncCallback<Void>() {
-                    public void handleResponse(Void response) {
-                        // user has been logged out.
-                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                        finish();
-                    }
+            BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
+            backendlessUser.setProperty(ChatUser.ONLINE, false);
+            updateCurentUser.update(backendlessUser, getBaseContext());
+            Backendless.UserService.logout(new AsyncCallback<Void>() {
+                public void handleResponse(Void response) {
+                    // user has been logged out.
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finish();
+                }
 
-                    public void handleFault(BackendlessFault fault) {
-                        // something went wrong and logout failed, to get the error code call fault.getCode()
-                    }
-                });
+                public void handleFault(BackendlessFault fault) {
+                    // something went wrong and logout failed, to get the error code call fault.getCode()
+                }
             });
-            logoutThread.start();
             return true;
         }
 
@@ -246,30 +258,27 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             replaceFragment(groupChatContainer);
         } else if (id == R.id.nav_manage) {
             replaceFragment(settingsFragment);
-        } else if (id == R.id.nav_terms_and_conditions){
+        } else if (id == R.id.nav_terms_and_conditions) {
             replaceFragment(termsAndConditionsFragment);
-        } else if (id == R.id.nav_about_us){
+        } else if (id == R.id.nav_about_us) {
             replaceFragment(aboutUsFragment);
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_logout) {
-            Thread logoutThread = new Thread(() -> {
-                BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
-                backendlessUser.setProperty(ChatUser.ONLINE, false);
-                updateCurentUser.update(backendlessUser, getBaseContext());
-                Backendless.UserService.logout(new AsyncCallback<Void>() {
-                    public void handleResponse(Void response) {
-                        // user has been logged out.
-                        startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                        finish();
-                    }
+            BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
+            backendlessUser.setProperty(ChatUser.ONLINE, false);
+            updateCurentUser.update(backendlessUser, this);
+            Backendless.UserService.logout(new AsyncCallback<Void>() {
+                public void handleResponse(Void response) {
+                    // user has been logged out.
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finish();
+                }
 
-                    public void handleFault(BackendlessFault fault) {
-                        Log.d("logout", fault.getMessage());
-                    }
-                });
+                public void handleFault(BackendlessFault fault) {
+                    Log.d("logout", fault.getMessage());
+                }
             });
-            logoutThread.start();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -298,7 +307,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     }
 
-
     @Override
     protected void setupComponent(ISeedProjectChatComponent appComponent) {
         mainActivityComponent = DaggerIMainActivityComponent.builder()
@@ -312,4 +320,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public IMainActivityComponent getComponent() {
         return mainActivityComponent;
     }
+
+
 }

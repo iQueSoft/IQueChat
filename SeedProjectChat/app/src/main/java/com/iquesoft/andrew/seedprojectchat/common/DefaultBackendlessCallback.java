@@ -1,6 +1,5 @@
 package com.iquesoft.andrew.seedprojectchat.common;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.backendless.async.callback.BackendlessCallback;
@@ -11,16 +10,9 @@ import com.backendless.exceptions.BackendlessFault;
  */
 
 public class DefaultBackendlessCallback<T> extends BackendlessCallback<T> {
-    private Context context;
 
-    public DefaultBackendlessCallback( Context context )
+    public DefaultBackendlessCallback()
     {
-        this.context = context;
-    }
-
-    public DefaultBackendlessCallback( Context context, String message )
-    {
-        this.context = context;
     }
 
     @Override

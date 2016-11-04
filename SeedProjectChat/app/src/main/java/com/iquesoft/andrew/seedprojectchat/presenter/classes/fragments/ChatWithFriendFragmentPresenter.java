@@ -82,7 +82,7 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
         }).subscribe(response -> {
             getFriends().getMessages().add(response);
             Thread saveThread = new Thread(()->{
-                getFriends().saveAsync(new DefaultBackendlessCallback<Friends>(context));
+                getFriends().saveAsync(new DefaultBackendlessCallback<Friends>());
             });
             saveThread.start();
             getViewState().updateLastVisibleMessage(response);
@@ -136,7 +136,7 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     public boolean onSendMessage(EditText messageField, Map<String, String> message,  Context context) {
         String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(message.toString());
         Thread sendThread = new Thread(() -> {
-            Backendless.Messaging.publish(friends.getObjectId(), toServerUnicodeEncoded, publishOptions, new DefaultBackendlessCallback<MessageStatus>(context) {
+            Backendless.Messaging.publish(friends.getObjectId(), toServerUnicodeEncoded, publishOptions, new DefaultBackendlessCallback<MessageStatus>() {
                 @Override
                 public void handleResponse(MessageStatus response) {
                     super.handleResponse(response);
