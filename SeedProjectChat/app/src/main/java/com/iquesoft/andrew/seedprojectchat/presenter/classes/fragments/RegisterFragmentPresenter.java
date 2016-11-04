@@ -99,7 +99,7 @@ public class RegisterFragmentPresenter implements IRegisterFragmentPresenter {
             chatUser.setName(name);
             chatUser.setPassword(password);
             chatUser.setPhoto(uriPhoto);
-            Backendless.UserService.register(chatUser, new DefaultBackendlessCallback<BackendlessUser>(view.getActivityContext()) {
+            Backendless.UserService.register(chatUser, new DefaultBackendlessCallback<BackendlessUser>() {
                 @Override
                 public void handleResponse(BackendlessUser response) {
                     super.handleResponse(response);

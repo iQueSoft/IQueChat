@@ -42,7 +42,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
     public void onLoginButtonClicked(String userEMail, String password, boolean rememberLogin, LoginActivity loginActivity, UpdateCurentUser updateCurentUser)
     {
         Thread loginThread = new Thread(() -> {
-            Backendless.UserService.login( userEMail, password, new DefaultBackendlessCallback<BackendlessUser>(loginActivity.getContext())
+            Backendless.UserService.login( userEMail, password, new DefaultBackendlessCallback<BackendlessUser>()
             {
                 public void handleResponse( BackendlessUser backendlessUser )
                 {
@@ -76,10 +76,42 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
         loginThread.start();
     }
 
+    public void autoLogin(){
+            Backendless.UserService.isValidLogin(new DefaultBackendlessCallback<Boolean>()
+            {
+                @Override
+                public void handleResponse( Boolean isValidLogin )
+                {
+                    if( isValidLogin && Backendless.UserService.CurrentUser() == null )
+                    {
+                        String currentUserId = Backendless.UserService.loggedInUser();
+
+                        if( !currentUserId.equals( "" ) )
+                        {
+                            Backendless.UserService.findById( currentUserId, new DefaultBackendlessCallback<BackendlessUser>()
+                            {
+                                @Override
+                                public void handleResponse( BackendlessUser currentUser )
+                                {
+                                    super.handleResponse( currentUser );
+                                    getViewState().setCurentUser(currentUser);
+                                    getViewState().showProgress(false);
+                                }
+                            } );
+                        }
+                    } else {
+                        getViewState().showProgress(false);
+                    }
+
+                    super.handleResponse( isValidLogin );
+                }
+            });
+    }
+
     public void onRestorePasswordButtonClicked(String eMail, Context context)
     {
         Thread restorePasswordThread = new Thread(() -> {
-            Backendless.UserService.restorePassword( eMail, new DefaultBackendlessCallback<Void>(context)
+            Backendless.UserService.restorePassword( eMail, new DefaultBackendlessCallback<Void>()
             {
                 @Override
                 public void handleResponse( Void response )
@@ -92,7 +124,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
         restorePasswordThread.start();
     }
 
-    public void loginInBackendless(final GoogleSignInAccount acct, LoginActivity loginActivity)
+    public void loginInBackendless(final GoogleSignInAccount acct, LoginActivity loginActivity, Boolean stayLoggedIn)
     {
         Log.d( TAG, "handleSignInResult: try login to backendless" );
         final String accountName = acct.getEmail();
@@ -110,7 +142,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                 {
                     token = GoogleAuthUtil.getToken( loginActivity.getContext(), accountName, scopes );
                     GoogleAuthUtil.invalidateToken( loginActivity.getContext(), token );
-                    handleAccessTokenInBackendless( acct.getIdToken(), token, acct.getPhotoUrl().toString());
+                    handleAccessTokenInBackendless( acct.getIdToken(), token, acct.getPhotoUrl().toString(), stayLoggedIn);
                 }
                 catch( UserRecoverableAuthException e )
                 {
@@ -129,7 +161,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
 
 
 
-    private void handleAccessTokenInBackendless( String idToken, String accessToken, String photoURI )
+    private void handleAccessTokenInBackendless( String idToken, String accessToken, String photoURI, Boolean stayLoggedIn )
     {
         Log.d( TAG, "idToken: "+idToken+ ", accessToken: "+accessToken );
 
@@ -162,7 +194,49 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                                     backendlessFault.getMessage() +
                                     " code: " + backendlessFault.getCode() );
                         }
-                    });
+                    }, stayLoggedIn);
     }
+
+    public void loginWithTwitter(LoginActivity activity, Boolean stayLoggedIn){
+
+        Backendless.UserService.loginWithTwitter(activity,new AsyncCallback<BackendlessUser>()
+        {
+            @Override
+            public void handleResponse( BackendlessUser loggedInUser )
+            {
+                getViewState().setCurentUser(loggedInUser);
+            }
+
+            @Override
+            public void handleFault( BackendlessFault fault )
+            {
+                // failed to log in
+            }
+        }, stayLoggedIn );
+    }
+
+    public void loginWithFacebook(LoginActivity activity){
+        Map<String, String> facebookFieldMappings = new HashMap<String, String>();
+        facebookFieldMappings.put( "email", "fb_email" );
+
+        List<String> permissions = new ArrayList<String>();
+        permissions.add( "email" );
+        Backendless.UserService.loginWithFacebook( activity, new AsyncCallback<BackendlessUser>()
+        {
+            @Override
+            public void handleResponse( BackendlessUser loggedInUser )
+            {
+                getViewState().setCurentUser(loggedInUser);
+            }
+
+            @Override
+            public void handleFault( BackendlessFault fault )
+            {
+                // failed to log in
+            }
+        } );
+    }
+
+
 
 }

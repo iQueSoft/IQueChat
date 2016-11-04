@@ -91,7 +91,7 @@ public class UserListAdapter extends STDAdapter<Friends> {
 
     // Insert a new item to the RecyclerView
     public void insert(Friends friends, int position) {
-        friends.saveAsync(new DefaultBackendlessCallback<Friends>(context){
+        friends.saveAsync(new DefaultBackendlessCallback<Friends>(){
             @Override
             public void handleResponse(Friends response) {
                 super.handleResponse(response);
@@ -103,7 +103,7 @@ public class UserListAdapter extends STDAdapter<Friends> {
 
     // Remove a RecyclerView item containing the Data object
     public void remove(int index) {
-        friendses.get(index).removeAsync(new DefaultBackendlessCallback<Long>(context){
+        friendses.get(index).removeAsync(new DefaultBackendlessCallback<Long>(){
             @Override
             public void handleResponse(Long response) {
                 super.handleResponse(response);
