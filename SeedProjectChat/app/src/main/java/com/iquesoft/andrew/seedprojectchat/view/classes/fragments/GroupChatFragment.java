@@ -34,6 +34,8 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatFragment;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -184,7 +186,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
                 if (serverPhotoPaths.size() == photoPaths.size()){
                     photoPaths.clear();
                     Map<String, String> messageMap = new HashMap<>();
-                    messageMap.put("message", messageEdit.getText().toString());
+                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
                     for (int i = 0; i<serverPhotoPaths.size(); i++){
                         String imageUri = serverPhotoPaths.get(i);
                         messageMap.put("image"+i, imageUri);
@@ -199,7 +201,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
                 serverDocPaths.add(response);
                 if (serverDocPaths.size() == docPaths.size()){
                     Map<String, String> messageMap = new HashMap<>();
-                    messageMap.put("message", messageEdit.getText().toString());
+                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
                     for (int i = 0; i<serverDocPaths.size(); i++){
                         String imageUri = serverDocPaths.get(i);
                         messageMap.put("document"+i, imageUri);
@@ -211,7 +213,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
             });
         } else {
             Map<String, String> messageMap = new HashMap<>();
-            messageMap.put("message", messageEdit.getText().toString());
+            messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
             presenter.onSendMessage(messageEdit,messageMap, getActivity());
         }
     }
