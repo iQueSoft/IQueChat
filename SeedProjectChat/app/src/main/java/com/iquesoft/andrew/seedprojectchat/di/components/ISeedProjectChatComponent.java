@@ -16,6 +16,7 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatConta
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.InviteToFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.LoginFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MainFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MyInvateFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.RegisterFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.SettingsFragment;
@@ -55,4 +56,5 @@ public interface ISeedProjectChatComponent {
     SettingsFragment provideSettingsFragment();
     TermsAndConditionsFragment provideTermsAndConditionsFragment();
     AboutUsFragment provideAboutUsFragment();
+    MainFragment provideMainFragment();
 }
