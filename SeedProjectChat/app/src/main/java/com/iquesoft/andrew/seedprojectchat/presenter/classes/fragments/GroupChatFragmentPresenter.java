@@ -284,9 +284,9 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     }
 
     public boolean onSendMessage(EditText messageField, Map<String, String> message, Context context) {
-        String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(message.toString());
+        //String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(message.toString());
         Thread sendThread = new Thread(() -> {
-            Backendless.Messaging.publish(curentGroupChat.getObjectId(),toServerUnicodeEncoded , publishOptions, new BackendlessCallback<MessageStatus>() {
+            Backendless.Messaging.publish(curentGroupChat.getObjectId(), message.toString(), publishOptions, new BackendlessCallback<MessageStatus>() {
                 @Override
                 public void handleResponse(MessageStatus response) {
                     PublishStatusEnum messageStatus = response.getStatus();
