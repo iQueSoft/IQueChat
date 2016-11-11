@@ -42,6 +42,7 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatWithFriend
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ContainerFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.FindFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatContainer;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MainFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.SettingsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.TermsAndConditionsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
@@ -87,6 +88,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Inject
     AboutUsFragment aboutUsFragment;
+
+    @Inject
+    MainFragment mainFragment;
 
     CircularImageView headerImage;
     TextView userName;
@@ -140,6 +144,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setCancelable(true);
+
+        replaceFragment(mainFragment);
     }
 
     @Override

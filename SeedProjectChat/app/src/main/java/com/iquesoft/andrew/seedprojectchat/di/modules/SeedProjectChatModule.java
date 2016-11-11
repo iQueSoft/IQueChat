@@ -17,6 +17,7 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatConta
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.GroupChatFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.InviteToFriendFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.LoginFragment;
+import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MainFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MyInvateFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.RegisterFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.SettingsFragment;
@@ -41,37 +42,37 @@ public class SeedProjectChatModule {
 
     @Provides
     @Singleton
-    public Application provideApplication(){
+    Application provideApplication(){
         return app;
     }
 
     @Provides
     @Singleton
-    public LoginFragmentPresenter provideLoginFragmentPresenter(){
+    LoginFragmentPresenter provideLoginFragmentPresenter(){
         return new LoginFragmentPresenter();
     }
 
     @Provides
     @Singleton
-    public LoginFragment provideLoginFragment(){
+    LoginFragment provideLoginFragment(){
         return new LoginFragment();
     }
 
     @Provides
     @Singleton
-    public RegisterFragmentPresenter provideRegisterFragmentPresenter(){
+    RegisterFragmentPresenter provideRegisterFragmentPresenter(){
         return new RegisterFragmentPresenter();
     }
 
     @Provides
     @Singleton
-    public RegisterFragment provideRegisterFragment(){
+    RegisterFragment provideRegisterFragment(){
         return new RegisterFragment();
     }
 
     @Provides
     @Singleton
-    public ValidateUtil provideValidateUtil(){
+    ValidateUtil provideValidateUtil(){
         return new ValidateUtil();
     }
 
@@ -151,4 +152,9 @@ public class SeedProjectChatModule {
         return new AboutUsFragment();
     }
 
+    @Provides
+    @Singleton
+    MainFragment provideMainFragment(){
+        return  new MainFragment();
+    }
 }
