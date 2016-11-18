@@ -14,7 +14,8 @@
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:id="@+id/rl_group_chat_container_raw">
 
         <TextView
             android:layout_height="wrap_content"

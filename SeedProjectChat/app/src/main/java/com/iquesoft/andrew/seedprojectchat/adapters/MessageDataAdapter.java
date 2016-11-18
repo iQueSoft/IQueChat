@@ -39,7 +39,7 @@ public class MessageDataAdapter extends RecyclerView.Adapter<MessageDataAdapter.
 
     @Override
     public MessageDataAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.data_row_in_mesage, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.last_message_image_raw, parent, false);
         return new MessageDataAdapter.ViewHolder(v);
     }
 

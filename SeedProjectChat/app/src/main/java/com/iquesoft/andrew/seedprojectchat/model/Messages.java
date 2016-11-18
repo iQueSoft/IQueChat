@@ -15,6 +15,7 @@ import static com.backendless.Backendless.Data;
 public class Messages
 {
     private String publisher_id;
+    private Boolean read;
     private String ownerId;
     private String message_id;
     private java.util.Date updated;
@@ -94,6 +95,15 @@ public class Messages
         return created;
     }
 
+    public Boolean getRead()
+    {
+        return read;
+    }
+
+    public void setRead( Boolean read )
+    {
+        this.read = read;
+    }
 
     public Messages save()
     {

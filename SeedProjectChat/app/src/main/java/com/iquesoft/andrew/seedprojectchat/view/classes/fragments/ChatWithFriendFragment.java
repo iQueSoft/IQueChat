@@ -23,6 +23,7 @@ import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.ChatWithFriendFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.MessageUtil;
 import com.iquesoft.andrew.seedprojectchat.util.UploadFileUtil;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFriendFragment;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
@@ -90,7 +91,6 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         this.getComponent(IMainActivityComponent.class).inject(this);
-        presenter.setContext(getActivity());
         if (presenter.getFriends() == null) {
             presenter.setFriends(friend);
         }
@@ -118,7 +118,7 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
                         String imageUri = serverPhotoPaths.get(i);
                         messageMap.put("image"+i, imageUri);
                     }
-                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                    MessageUtil.onSendMessage(messageEdit, messageMap, getActivity(), presenter.getPublishOptions(), presenter.getFriends().getObjectId());
                     previewPhotoAdapter.clear();
                 }
             });
@@ -134,14 +134,14 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
                         messageMap.put("document"+i, imageUri);
                     }
                     Log.d("document", serverDocPaths.toString());
-                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
+                    MessageUtil.onSendMessage(messageEdit, messageMap, getActivity(), presenter.getPublishOptions(), presenter.getFriends().getObjectId());
                     previewPhotoAdapter.clear();
                 }
             });
         } else {
             Map<String, String> messageMap = new HashMap<>();
             messageMap.put("message", messageEdit.getText().toString());
-            presenter.onSendMessage(messageEdit,messageMap, getActivity());
+            MessageUtil.onSendMessage(messageEdit, messageMap, getActivity(), presenter.getPublishOptions(), presenter.getFriends().getObjectId());
         }
     }
 
