@@ -41,19 +41,21 @@
             android:theme="@style/AppTheme" />
 
         <receiver
-            android:name=".receiver.PushReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND">
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="com.iquesoft.andrew.seedprojectchat" />
+            </intent-filter>
+            <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-
                 <category android:name="com.iquesoft.andrew.seedprojectchat" />
             </intent-filter>
         </receiver>
 
         <service
-            android:name=".services.PushServices"
-            android:permission="com.google.android.c2dm.permission.SEND">
+            android:name="com.iquesoft.andrew.seedprojectchat.services.PushServices" android:enabled="true" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>

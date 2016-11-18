@@ -11,31 +11,17 @@ import com.iquesoft.andrew.seedprojectchat.util.Future;
  * Created by andru on 9/17/2016.
  */
 
-public class GroupChat
+public class GroupChat extends BaseChatModel
 {
-    private java.util.Date created;
     private String ownerId;
-    private java.util.Date updated;
     private String chanel;
-    private Double serialVersionUID;
-    private String objectId;
     private String chatName;
-    private java.util.List<Messages> messages;
     private BackendlessUser owner;
     private java.util.List<BackendlessUser> users;
-    public java.util.Date getCreated()
-    {
-        return created;
-    }
 
     public String getOwnerId()
     {
         return ownerId;
-    }
-
-    public java.util.Date getUpdated()
-    {
-        return updated;
     }
 
     public String getChanel()
@@ -48,21 +34,6 @@ public class GroupChat
         this.chanel = chanel;
     }
 
-    public Double getSerialVersionUID()
-    {
-        return serialVersionUID;
-    }
-
-    public void setSerialVersionUID( Double serialVersionUID )
-    {
-        this.serialVersionUID = serialVersionUID;
-    }
-
-    public String getObjectId()
-    {
-        return objectId;
-    }
-
     public String getChatName()
     {
         return chatName;
@@ -71,16 +42,6 @@ public class GroupChat
     public void setChatName( String chatName )
     {
         this.chatName = chatName;
-    }
-
-    public java.util.List<Messages> getMessages()
-    {
-        return messages;
-    }
-
-    public void setMessages( java.util.List<Messages> messages )
-    {
-        this.messages = messages;
     }
 
     public BackendlessUser getOwner()

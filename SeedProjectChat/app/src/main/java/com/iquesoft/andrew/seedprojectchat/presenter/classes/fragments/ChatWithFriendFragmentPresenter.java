@@ -1,9 +1,6 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
-import android.content.Context;
 import android.util.Log;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
@@ -16,19 +13,13 @@ import com.backendless.messaging.Message;
 import com.backendless.messaging.PublishOptions;
 import com.backendless.messaging.SubscriptionOptions;
 import com.backendless.persistence.BackendlessDataQuery;
-import com.backendless.services.messaging.MessageStatus;
-import com.backendless.services.messaging.PublishStatusEnum;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IChatWithFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFriendFragment;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
@@ -47,7 +38,6 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     private Subscription subscription;
     private rx.Subscription subscribeUpdateNewMessages;
     private Friends friends;
-    private Context context;
 
     public Friends getFriends() {
         return friends;
@@ -57,26 +47,22 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
         this.friends = friends;
     }
 
-    public void setContext(Context context) {
-        this.context = context;
-    }
-
     public ChatWithFriendFragmentPresenter() {
         publishOptions = new PublishOptions();
         publishOptions.setPublisherId(Backendless.UserService.CurrentUser().getObjectId());
         subscriptionOptions = new SubscriptionOptions();
     }
 
+    public PublishOptions getPublishOptions() {
+        return publishOptions;
+    }
+
     @Override
     public void attachView(IChatWithFriendFragment view) {
         subscribe();
         subscribeUpdateNewMessages = messages.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).flatMap(Observable::from).flatMap(response -> {
-            Messages messages = new Messages();
+            Messages messages = (Messages) response.getData();
             messages.setHeader(response.getHeaders().get("android-ticker-text"));
-            Date date = new Date(response.getTimestamp());
-            messages.setTimestamp(date);
-            messages.setPublisher_id(response.getPublisherId());
-            messages.setData(response.getData().toString());
             messages.setMessage_id(response.getMessageId());
             return Observable.just(messages);
         }).subscribe(response -> {
@@ -131,26 +117,6 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
                     subscription = response;
                 }
             });
-    }
-
-    public boolean onSendMessage(EditText messageField, Map<String, String> message,  Context context) {
-        String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(message.toString());
-        Thread sendThread = new Thread(() -> {
-            Backendless.Messaging.publish(friends.getObjectId(), toServerUnicodeEncoded, publishOptions, new DefaultBackendlessCallback<MessageStatus>() {
-                @Override
-                public void handleResponse(MessageStatus response) {
-                    super.handleResponse(response);
-                    PublishStatusEnum messageStatus = response.getStatus();
-                    if (messageStatus == PublishStatusEnum.SCHEDULED) {
-                        messageField.setText("");
-                    } else {
-                        Toast.makeText(context, "Message status: " + messageStatus.toString(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        });
-        sendThread.start();
-        return true;
     }
 
     public void refreshMessageList(){

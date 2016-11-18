@@ -7,16 +7,10 @@ import com.backendless.async.callback.AsyncCallback;
 import com.backendless.persistence.BackendlessDataQuery;
 import com.iquesoft.andrew.seedprojectchat.util.Future;
 
-public class Friends
+public class Friends extends BaseChatModel
 {
-    private java.util.Date updated;
-    private Double serialVersionUID;
     private String subtopic;
     private Integer status;
-    private String ownerId;
-    private java.util.Date created;
-    private String objectId;
-    private java.util.List<Messages> messages;
     private Boolean isSelected;
     private BackendlessUser user_one;
     private BackendlessUser user_two;
@@ -27,21 +21,6 @@ public class Friends
 
     public void setSelected(Boolean selected) {
         isSelected = selected;
-    }
-
-    public java.util.Date getUpdated()
-    {
-        return updated;
-    }
-
-    public Double getSerialVersionUID()
-    {
-        return serialVersionUID;
-    }
-
-    public void setSerialVersionUID( Double serialVersionUID )
-    {
-        this.serialVersionUID = serialVersionUID;
     }
 
     public String getSubtopic()
@@ -62,31 +41,6 @@ public class Friends
     public void setStatus( Integer status )
     {
         this.status = status;
-    }
-
-    public String getOwnerId()
-    {
-        return ownerId;
-    }
-
-    public java.util.Date getCreated()
-    {
-        return created;
-    }
-
-    public String getObjectId()
-    {
-        return objectId;
-    }
-
-    public java.util.List<Messages> getMessages()
-    {
-        return messages;
-    }
-
-    public void setMessages( java.util.List<Messages> messages )
-    {
-        this.messages = messages;
     }
 
     public BackendlessUser getUser_one()
