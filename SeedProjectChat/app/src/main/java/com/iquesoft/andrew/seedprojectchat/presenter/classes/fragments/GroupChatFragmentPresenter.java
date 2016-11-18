@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
@@ -20,34 +19,21 @@ import com.arellomobile.mvp.viewstate.strategy.StateStrategyType;
 import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
 import com.backendless.BackendlessUser;
-import com.backendless.Subscription;
 import com.backendless.async.callback.BackendlessCallback;
-import com.backendless.exceptions.BackendlessFault;
-import com.backendless.messaging.DeliveryOptions;
-import com.backendless.messaging.Message;
 import com.backendless.messaging.PublishOptions;
-import com.backendless.messaging.PushPolicyEnum;
-import com.backendless.messaging.SubscriptionOptions;
 import com.backendless.persistence.BackendlessDataQuery;
-import com.backendless.services.messaging.MessageStatus;
-import com.backendless.services.messaging.PublishStatusEnum;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.GroupChatFriendListAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
-import com.iquesoft.andrew.seedprojectchat.common.DefaultsBackendlessKey;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
-import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IGroupChatFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.MessageUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatFragment;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -57,7 +43,6 @@ import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
 
 /**
  * Created by andru on 9/23/2016.
@@ -67,9 +52,6 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
 
     private GroupChatFriendListAdapter adapter;
     private PublishOptions publishOptions;
-    private SubscriptionOptions subscriptionOptions;
-    private Subscription subscription;
-    private PublishSubject<List<Message>> messages = PublishSubject.create();
     private GroupChat curentGroupChat;
     private rx.Subscription messageSubscription;
     private rx.Subscription sortMessage;
@@ -90,56 +72,40 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     public GroupChatFragmentPresenter() {
         publishOptions = new PublishOptions();
         publishOptions.setPublisherId(Backendless.UserService.CurrentUser().getObjectId());
-        subscriptionOptions = new SubscriptionOptions();
+    }
+
+    public PublishOptions getPublishOptions() {
+        return publishOptions;
     }
 
     @Override
     public void attachView(IGroupChatFragment view) {
         Log.d("check", "attach");
-        subscribe();
+        MessageUtil.subscribe(curentGroupChat.getObjectId());
         if (curentGroupChat.getMessages() != null){
-            sortMessage = Observable.from(curentGroupChat.getMessages()).toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
+            sortMessage = Observable.from(curentGroupChat.getMessages())
+                    .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
                     .subscribe(response -> {
                         getViewState().setMessageAdapter(response);
                     });
         }
-        messageSubscription = messages
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .flatMap(Observable::from)
-                .flatMap(response -> {
-                    Messages messages = new Messages();
-                    messages.setHeader(response.getHeaders().get("android-ticker-text"));
-                    Date date = new Date(response.getTimestamp());
-                    messages.setTimestamp(date);
-                    messages.setPublisher_id(response.getPublisherId());
-                    messages.setData(response.getData().toString());
-                    messages.setMessage_id(response.getMessageId());
-                    return Observable.just(messages);
-                }).filter(response -> response != null).subscribe(response -> {
-                    sendPushNotification(response.getData());
-                    curentGroupChat.getMessages().add(response);
-                    curentGroupChat.saveAsync(new BackendlessCallback<GroupChat>() {
-                        @Override
-                        public void handleResponse(GroupChat groupChat) {
 
-                        }
-                    });
+                messageSubscription = MessageUtil.obsSaveNewMessage(curentGroupChat.getMessages().get(curentGroupChat.getMessages().size() - 1).getTimestamp()).subscribe(response -> {
+                    MessageUtil.sendPushNotification(response, curentGroupChat.getObjectId());
+                    curentGroupChat.getMessages().add(response);
+                    curentGroupChat.saveAsync(new DefaultBackendlessCallback<>());
                     getViewState().showNewMessage(response);
                 });
-        Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, curentGroupChat.getObjectId());
         super.attachView(view);
     }
 
     private BehaviorSubject<List<Friends>> getCurentFriendList() {
         BehaviorSubject<List<Friends>> friendsObservable = BehaviorSubject.create();
-        friendsObservable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
         String whereClause = "(user_one.objectId='" + Backendless.UserService.CurrentUser().getProperty("objectId") + "'" +
                 " or " + "user_two.objectId='" + Backendless.UserService.CurrentUser().getProperty("objectId") + "')" +
                 " and " + "status = '2'";
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
         dataQuery.setWhereClause(whereClause);
-        Thread friendsThread = new Thread(() -> {
             Friends.findAsync(dataQuery, new BackendlessCallback<BackendlessCollection<Friends>>() {
                 @Override
                 public void handleResponse(BackendlessCollection<Friends> response) {
@@ -147,8 +113,6 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
                     friendsObservable.onNext(response.getData());
                 }
             });
-        });
-        friendsThread.start();
         return friendsObservable;
     }
 
@@ -160,7 +124,8 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
         RecyclerView recyclerAddUserToGroupChat = (RecyclerView) view.findViewById(R.id.recycler_add_user_to_group_chat);
         FloatingActionButton fabCreateGroupChat = (FloatingActionButton) view.findViewById(R.id.fab_create_group_chat);
         if (!getCurentFriendList().subscribe().isUnsubscribed()) {
-            getCurentFriendList().subscribe(response -> setFriendAdapter(response, recyclerAddUserToGroupChat, context));
+            getCurentFriendList().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(response -> setFriendAdapter(response, recyclerAddUserToGroupChat, context));
         }
         AlertDialog dialog = builder.create();
         dialog.setCancelable(true);
@@ -205,12 +170,7 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
     }
 
     public void saveCurentChat() {
-        curentGroupChat.saveAsync(new BackendlessCallback<GroupChat>() {
-            @Override
-            public void handleResponse(GroupChat groupChat) {
-                Log.d("response", groupChat.toString());
-            }
-        });
+        curentGroupChat.saveAsync(new DefaultBackendlessCallback<>());
     }
 
     @Override
@@ -221,7 +181,7 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
         }
         messageSubscription.unsubscribe();
         try {
-            subscription.cancelSubscription();
+            MessageUtil.getSubscription().cancelSubscription();
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
@@ -261,59 +221,22 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
         }
     }
 
-    private void subscribe() {
-        Thread myThread = new Thread(() -> {
-            Backendless.Messaging.subscribe(curentGroupChat.getObjectId(), new BackendlessCallback<List<Message>>() {
-                @Override
-                public void handleResponse(List<Message> response) {
-                    messages.onNext(response);
-                }
-
-                @Override
-                public void handleFault(BackendlessFault fault) {
-
-                }
-            }, subscriptionOptions, new BackendlessCallback<Subscription>() {
-                @Override
-                public void handleResponse(Subscription response) {
-                    subscription = response;
-                }
-            });
-        });
-        myThread.start();
-    }
-
-    public boolean onSendMessage(EditText messageField, Map<String, String> message, Context context) {
-        //String toServerUnicodeEncoded = StringEscapeUtils.escapeJava(message.toString());
-        Thread sendThread = new Thread(() -> {
-            Backendless.Messaging.publish(curentGroupChat.getObjectId(), message.toString(), publishOptions, new BackendlessCallback<MessageStatus>() {
-                @Override
-                public void handleResponse(MessageStatus response) {
-                    PublishStatusEnum messageStatus = response.getStatus();
-
-                    if (messageStatus == PublishStatusEnum.SCHEDULED) {
-                        messageField.setText("");
-                    } else {
-                        Toast.makeText(context, "Message status: " + messageStatus.toString(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        });
-        sendThread.start();
-        return true;
-    }
-
-    private void sendPushNotification(String message) {
-        PublishOptions publishOptions = new PublishOptions();
-        publishOptions.putHeader(PublishOptions.ANDROID_TICKER_TEXT_TAG, "You have new message");
-        publishOptions.putHeader(PublishOptions.ANDROID_CONTENT_TITLE_TAG, "iQueChat");
-        DeliveryOptions deliveryOptions = new DeliveryOptions();
-        deliveryOptions.setPushPolicy(PushPolicyEnum.ONLY);
-        Backendless.Messaging.publish(curentGroupChat.getObjectId(), message, publishOptions, deliveryOptions, new BackendlessCallback<MessageStatus>() {
-            @Override
-            public void handleResponse(MessageStatus response) {
-                Log.i("sendPush", response.getStatus().toString());
-            }
-        });
-    }
+//    private void subscribe() {
+//            Backendless.Messaging.subscribe(curentGroupChat.getObjectId(), new BackendlessCallback<List<Message>>() {
+//                @Override
+//                public void handleResponse(List<Message> response) {
+//                    messages.onNext(response);
+//                }
+//
+//                @Override
+//                public void handleFault(BackendlessFault fault) {
+//
+//                }
+//            }, subscriptionOptions, new BackendlessCallback<Subscription>() {
+//                @Override
+//                public void handleResponse(Subscription response) {
+//                    subscription = response;
+//                }
+//            });
+//    }
 }

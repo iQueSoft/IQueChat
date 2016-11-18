@@ -98,9 +98,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     ProgressDialog mProgressDialog;
 
+    private Boolean mainFlag = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null){
+            mainFlag = savedInstanceState.getBoolean("mainFlag");
+        }
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -145,7 +150,19 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setCancelable(true);
 
-        replaceFragment(mainFragment);
+        if (mainFlag.equals(false)){
+            navigationView.setCheckedItem(R.id.nav_home);
+            getSupportActionBar().setTitle("Home");
+            replaceFragment(mainFragment);
+            mainFlag = true;
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("mainFlag", mainFlag);
+        Log.d("1", "1");
     }
 
     @Override
@@ -257,8 +274,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_friends) {
+        if (id == R.id.nav_home){
+            replaceFragment(mainFragment);
+        }else if (id == R.id.nav_friends) {
             replaceFragment(containerFriendFragment);
         } else if (id == R.id.nav_group_chat) {
             replaceFragment(groupChatContainer);

@@ -20,26 +20,24 @@ import android.widget.FrameLayout;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
 import com.backendless.async.callback.BackendlessCallback;
+import com.backendless.exceptions.BackendlessFault;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
 import com.iquesoft.andrew.seedprojectchat.adapters.PreviewPhotoAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultsBackendlessKey;
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.GroupChatFragmentPresenter;
-import com.iquesoft.andrew.seedprojectchat.util.OnBackPressedListener;
-import com.iquesoft.andrew.seedprojectchat.util.UploadFileUtil;
+import com.iquesoft.andrew.seedprojectchat.util.MessageUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatFragment;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -57,7 +55,7 @@ import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
  * Created by andru on 9/23/2016.
  */
 
-public class GroupChatFragment extends BaseFragment implements IGroupChatFragment, EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener, OnBackPressedListener {
+public class GroupChatFragment extends BaseFragment implements IGroupChatFragment, EmojiconGridFragment.OnEmojiconClickedListener, EmojiconsFragment.OnEmojiconBackspaceClickedListener {
 
     @InjectPresenter
     GroupChatFragmentPresenter presenter;
@@ -109,6 +107,19 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
         if (presenter.isGroupChatNull()){
             presenter.setCurentGroupChat(curentGroupChat);
         }
+        Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, curentGroupChat.getObjectId(), new DefaultBackendlessCallback<Void>(){
+            @Override
+            public void handleResponse(Void response) {
+                super.handleResponse(response);
+                Log.d("registerDevice", "response ok");
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                super.handleFault(fault);
+                Log.d("registerDevice", "response fail");
+            }
+        });
     }
 
     private void setEmojiconFragment(boolean useSystemDefault) {
@@ -179,43 +190,8 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
 
     @OnClick(R.id.chatSendButton)
     public void sendClick (){
-        serverPhotoPaths.clear();
-        if (photoPaths.size() != 0){
-            UploadFileUtil.getAndCompressImageWithUri(photoPaths,getActivity()).subscribe(response -> {
-                serverPhotoPaths.add(response);
-                if (serverPhotoPaths.size() == photoPaths.size()){
-                    photoPaths.clear();
-                    Map<String, String> messageMap = new HashMap<>();
-                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
-                    for (int i = 0; i<serverPhotoPaths.size(); i++){
-                        String imageUri = serverPhotoPaths.get(i);
-                        messageMap.put("image"+i, imageUri);
-                    }
-                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
-                    previewPhotoAdapter.clear();
-                }
-            });
-        }else if (docPaths.size() != 0){
-            serverDocPaths.clear();
-            UploadFileUtil.uploadFilesToServer(docPaths, getActivity()).subscribe(response -> {
-                serverDocPaths.add(response);
-                if (serverDocPaths.size() == docPaths.size()){
-                    Map<String, String> messageMap = new HashMap<>();
-                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
-                    for (int i = 0; i<serverDocPaths.size(); i++){
-                        String imageUri = serverDocPaths.get(i);
-                        messageMap.put("document"+i, imageUri);
-                    }
-                    Log.d("document", serverDocPaths.toString());
-                    presenter.onSendMessage(messageEdit, messageMap, getActivity());
-                    previewPhotoAdapter.clear();
-                }
-            });
-        } else {
-            Map<String, String> messageMap = new HashMap<>();
-            messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
-            presenter.onSendMessage(messageEdit,messageMap, getActivity());
-        }
+        MessageUtil.sendClick(serverPhotoPaths, serverDocPaths, getActivity(), photoPaths, docPaths,
+                messageEdit, presenter.getCurentGroupChat().getObjectId(), previewPhotoAdapter);
     }
 
     public void setCurentGroupChat(GroupChat groupChat){
@@ -311,8 +287,4 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     }
 
 
-    @Override
-    public void onBackPressed() {
-        mainActivity.setGroupChatContainer();
-    }
 }
