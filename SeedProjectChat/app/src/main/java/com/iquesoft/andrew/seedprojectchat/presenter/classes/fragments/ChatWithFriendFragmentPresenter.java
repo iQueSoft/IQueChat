@@ -17,6 +17,7 @@ import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IChatWithFriendFragmentPresenter;
+import com.iquesoft.andrew.seedprojectchat.util.MessageUtil;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFriendFragment;
 
 import java.util.List;
@@ -33,9 +34,9 @@ import rx.subjects.PublishSubject;
 public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFriendFragment> implements IChatWithFriendFragmentPresenter {
 
     private PublishOptions publishOptions;
-    private SubscriptionOptions subscriptionOptions;
+    //private SubscriptionOptions subscriptionOptions;
     private PublishSubject<List<Message>> messages = PublishSubject.create();
-    private Subscription subscription;
+    //private Subscription subscription;
     private rx.Subscription subscribeUpdateNewMessages;
     private Friends friends;
 
@@ -50,7 +51,7 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     public ChatWithFriendFragmentPresenter() {
         publishOptions = new PublishOptions();
         publishOptions.setPublisherId(Backendless.UserService.CurrentUser().getObjectId());
-        subscriptionOptions = new SubscriptionOptions();
+        //subscriptionOptions = new SubscriptionOptions();
     }
 
     public PublishOptions getPublishOptions() {
@@ -59,18 +60,10 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
 
     @Override
     public void attachView(IChatWithFriendFragment view) {
-        subscribe();
-        subscribeUpdateNewMessages = messages.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).flatMap(Observable::from).flatMap(response -> {
-            Messages messages = (Messages) response.getData();
-            messages.setHeader(response.getHeaders().get("android-ticker-text"));
-            messages.setMessage_id(response.getMessageId());
-            return Observable.just(messages);
-        }).subscribe(response -> {
+        MessageUtil.subscribe(friends.getObjectId());
+        subscribeUpdateNewMessages = MessageUtil.obsSaveNewMessage(friends.getMessages().get(friends.getMessages().size() - 1).getTimestamp()).subscribe(response -> {
             getFriends().getMessages().add(response);
-            Thread saveThread = new Thread(()->{
-                getFriends().saveAsync(new DefaultBackendlessCallback<Friends>());
-            });
-            saveThread.start();
+            getFriends().saveAsync(new DefaultBackendlessCallback<>());
             getViewState().updateLastVisibleMessage(response);
         });
         super.attachView(view);
@@ -79,7 +72,7 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     @Override
     public void detachView(IChatWithFriendFragment view) {
         try {
-            subscription.cancelSubscription();
+            MessageUtil.getSubscription().cancelSubscription();
         } catch (NullPointerException e){
             e.printStackTrace();
         }
@@ -100,24 +93,24 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     }
 
 
-    public void subscribe() {
-            Backendless.Messaging.subscribe(friends.getObjectId(), new BackendlessCallback<List<Message>>() {
-                @Override
-                public void handleResponse(List<Message> response) {
-                    messages.onNext(response);
-                }
-
-                @Override
-                public void handleFault(BackendlessFault fault) {
-                    Log.d("error", fault.getMessage());
-                }
-            }, subscriptionOptions, new BackendlessCallback<Subscription>() {
-                @Override
-                public void handleResponse(Subscription response) {
-                    subscription = response;
-                }
-            });
-    }
+//    public void subscribe() {
+//            Backendless.Messaging.subscribe(friends.getObjectId(), new BackendlessCallback<List<Message>>() {
+//                @Override
+//                public void handleResponse(List<Message> response) {
+//                    messages.onNext(response);
+//                }
+//
+//                @Override
+//                public void handleFault(BackendlessFault fault) {
+//                    Log.d("error", fault.getMessage());
+//                }
+//            }, subscriptionOptions, new BackendlessCallback<Subscription>() {
+//                @Override
+//                public void handleResponse(Subscription response) {
+//                    subscription = response;
+//                }
+//            });
+//    }
 
     public void refreshMessageList(){
         String usernameQuery = "objectId =" + "'" + friends.getObjectId() + "'";

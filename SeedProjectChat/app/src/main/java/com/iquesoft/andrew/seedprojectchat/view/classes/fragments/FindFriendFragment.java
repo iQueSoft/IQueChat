@@ -35,7 +35,7 @@ import rx.schedulers.Schedulers;
 /**
  * Created by andrew on 8/31/2016.
  */
-
+// TODO: inject Moxy
 public class FindFriendFragment extends BaseFragment implements IFindFriendFragment {
 
     @Inject

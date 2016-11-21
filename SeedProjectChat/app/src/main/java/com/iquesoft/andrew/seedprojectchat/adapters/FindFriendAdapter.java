@@ -21,9 +21,12 @@ import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultMessages;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
+import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -61,6 +64,13 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Vi
             friend.setUser_one(Backendless.UserService.CurrentUser());
             friend.setUser_two(users.get(position));
             friend.setStatus(1);
+            Messages messages = new Messages();
+            messages.setData("{message=Welcome to chat with " + friend.getUser_two().getProperty(ChatUser.NAME).toString() + "}");
+            messages.setTimestamp(new Date());
+            messages.setPublisher_id(friend.getUser_one().getUserId());
+            List<Messages> messagesList = new ArrayList<>();
+            messagesList.add(messages);
+            friend.setMessages(messagesList);
             friend.saveAsync(new DefaultBackendlessCallback<Friends>(){
                 @Override
                 public void handleResponse(Friends response) {
