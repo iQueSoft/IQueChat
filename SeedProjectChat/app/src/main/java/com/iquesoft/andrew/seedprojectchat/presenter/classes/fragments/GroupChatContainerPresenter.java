@@ -23,10 +23,13 @@ import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.GroupChatFriendListAdapter;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
+import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IGroupChatContainerPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatContainer;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
@@ -119,7 +122,14 @@ public class GroupChatContainerPresenter extends MvpPresenter<IGroupChatContaine
     }
 
     private void createGroupChat(String chatName, List<BackendlessUser> users, AlertDialog alertDialog){
+        Messages messages = new Messages();
+        messages.setData("{message=Welcome to chat " + chatName + "}");
+        messages.setTimestamp(new Date());
+        messages.setPublisher_id(Backendless.UserService.CurrentUser().getObjectId());
         GroupChat groupChat = new GroupChat();
+        List<Messages> messagesList = new ArrayList<>();
+        messagesList.add(messages);
+        groupChat.setMessages(messagesList);
         groupChat.setChatName(chatName);
         groupChat.setOwner(Backendless.UserService.CurrentUser());
         groupChat.setUsers(users);

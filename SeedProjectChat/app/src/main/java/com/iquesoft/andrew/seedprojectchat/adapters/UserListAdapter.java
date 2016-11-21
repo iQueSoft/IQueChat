@@ -24,7 +24,7 @@ import io.huannguyen.swipetodeleterv.STDAdapter;
 /**
  * Created by andru on 8/30/2016.
  */
-
+// TODO: Fix Delete friend
 public class UserListAdapter extends STDAdapter<Friends> {
 
     private List<Friends> friendses;

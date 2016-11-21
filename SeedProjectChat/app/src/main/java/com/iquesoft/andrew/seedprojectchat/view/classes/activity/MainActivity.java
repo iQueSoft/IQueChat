@@ -287,7 +287,14 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.nav_about_us) {
             replaceFragment(aboutUsFragment);
         } else if (id == R.id.nav_share) {
-
+            Uri imageUri =  Uri.parse("android.resource://com.iquesoft.andrew.seedprojectchat/" + R.drawable.seed_logo);
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "IQueChat");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+            shareIntent.setType("image/jpeg");
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(shareIntent, "send"));
         } else if (id == R.id.nav_logout) {
             BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
             backendlessUser.setProperty(ChatUser.ONLINE, false);
