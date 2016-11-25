@@ -3,6 +3,7 @@ package com.iquesoft.andrew.seedprojectchat.adapters;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import com.squareup.picasso.Picasso;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,10 +60,10 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
     @Override
     public ChatFragmentAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v;
-        if(viewType == USER){
+        if (viewType == USER) {
             v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_chat_raw, parent, false);
             return new ChatFragmentAdapter.ViewHolder(v);
-        }else {
+        } else {
             v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_chat_raw_left, parent, false);
             return new ChatFragmentAdapter.ViewHolder(v);
         }
@@ -70,18 +72,29 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
     @Override
     public void onBindViewHolder(ChatFragmentAdapter.ViewHolder holder, int position) {
         Messages messages = messageList.get(position);
-        Map<String, String> messageMap = StringToMapUtils.splitToMap(StringEscapeUtils.unescapeJava(messages.getData()), ", ", "=");
-        if (messageMap.containsKey("message")){
+        Map<String, String> messageMap = new HashMap<>(StringToMapUtils.splitToMap(StringEscapeUtils.unescapeJava(messages.getData()), ", ", "="));
+        if (messageMap.containsKey("message")) {
             holder.txtMessage.setText(messageMap.get("message"));
             messageMap.remove("message");
-            if (messageMap.size() != 0){
+            if (messageMap.size() != 0) {
                 setMessageImage(holder, messageMap);
             }
         } else {
             setMessageImage(holder, messageMap);
         }
 
-        if (messages.getTimestamp() != null){
+        try {
+            if (!messages.getRead() & getItemViewType(position) == OPPONENT) {
+                holder.content.setBackgroundColor(ResourcesCompat.getColor(context.getResources(), R.color.grey, null));
+            } else {
+                holder.content.setBackgroundColor(ResourcesCompat.getColor(context.getResources(), R.color.material_light, null));
+            }
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
+
+        if (messages.getTimestamp() != null) {
             holder.txtInfo.setText(messages.getTimestamp().toString());
 
             Backendless.UserService.findById(messages.getPublisher_id(), new BackendlessCallback<BackendlessUser>() {
@@ -96,7 +109,7 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
         }
     }
 
-    public void setMessageImage(ChatFragmentAdapter.ViewHolder holder, Map<String, String> messageImageMap){
+    public void setMessageImage(ChatFragmentAdapter.ViewHolder holder, Map<String, String> messageImageMap) {
         MessageDataAdapter adapter = new MessageDataAdapter(messageImageMap, context, fragmentManager);
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         holder.recyclerView.setLayoutManager(layoutManager);

@@ -2,8 +2,12 @@ package com.iquesoft.andrew.seedprojectchat.view.classes.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +25,7 @@ import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.iquesoft.andrew.seedprojectchat.Manifest;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
 import com.iquesoft.andrew.seedprojectchat.adapters.PreviewPhotoAdapter;
@@ -81,6 +86,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     private ArrayList<String> serverPhotoPaths = new ArrayList<>();
     private ArrayList<String> docPaths = new ArrayList<>();
     private ArrayList<String> serverDocPaths = new ArrayList<>();
+    private final int PERMISSION_REQUEST_CODE = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -110,14 +116,14 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
         Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, curentGroupChat.getObjectId(), new DefaultBackendlessCallback<Void>(){
             @Override
             public void handleResponse(Void response) {
-                super.handleResponse(response);
                 Log.d("registerDevice", "response ok");
+                super.handleResponse(response);
             }
 
             @Override
             public void handleFault(BackendlessFault fault) {
-                super.handleFault(fault);
                 Log.d("registerDevice", "response fail");
+                super.handleFault(fault);
             }
         });
     }
@@ -149,19 +155,49 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     }
 
     public void documentSelector() {
-        ArrayList<String> ll = new ArrayList<>();
-        FilePickerBuilder.getInstance().setMaxCount(10)
-                .setSelectedFiles(ll)
-                .setActivityTheme(R.style.MyTheme)
-                .pickDocument(this);
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            ArrayList<String> ll = new ArrayList<>();
+            FilePickerBuilder.getInstance().setMaxCount(10)
+                    .setSelectedFiles(ll)
+                    .setActivityTheme(R.style.MyTheme)
+                    .pickDocument(this);
+        } else {
+            requestPermission(1);
+        }
     }
 
     public void photoSelector() {
-        ArrayList<String> ll = new ArrayList<>();
-        FilePickerBuilder.getInstance().setMaxCount(10)
-                .setSelectedFiles(ll)
-                .setActivityTheme(R.style.MyTheme)
-                .pickPhoto(this);
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            ArrayList<String> ll = new ArrayList<>();
+            FilePickerBuilder.getInstance().setMaxCount(10)
+                    .setSelectedFiles(ll)
+                    .setActivityTheme(R.style.MyTheme)
+                    .pickPhoto(this);
+        } else {
+            requestPermission(2);
+        }
+    }
+
+    private void requestPermission(int requestCode){
+        ActivityCompat.requestPermissions(getActivity(),
+                new String[] {
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                },
+                requestCode);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case 1:
+                documentSelector();
+                break;
+            case 2:
+                photoSelector();
+                break;
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -192,6 +228,22 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
     public void sendClick (){
         MessageUtil.sendClick(serverPhotoPaths, serverDocPaths, getActivity(), photoPaths, docPaths,
                 messageEdit, presenter.getCurentGroupChat().getObjectId(), previewPhotoAdapter);
+    }
+
+    @OnClick(R.id.messageEdit)
+    public void setReadClick(){
+        for (Messages messages : presenter.getCurentGroupChat().getMessages()){
+            if (!messages.getPublisher_id().equals(Backendless.UserService.CurrentUser().getUserId())){
+                messages.setRead(true);
+            }
+        }
+        presenter.getCurentGroupChat().saveAsync(new DefaultBackendlessCallback<GroupChat>(){
+            @Override
+            public void handleResponse(GroupChat response) {
+                adapter.notifyDataSetChanged();
+                super.handleResponse(response);
+            }
+        });
     }
 
     public void setCurentGroupChat(GroupChat groupChat){
@@ -229,7 +281,8 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
                 presenter.liveChat(mainActivity);
                 break;
             case R.id.action_delete_chat:
-
+                presenter.getCurentGroupChat().removeAsync(new DefaultBackendlessCallback<>());
+                break;
             case R.id.action_edit_chat:
                 presenter.createDialogGroupChat(getActivity(), getActivity().getLayoutInflater());
                 break;
@@ -242,6 +295,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
                         adapter.notifyDataSetChanged();
                     }
                 });
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
