@@ -82,6 +82,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                 @Override
                 public void handleResponse( Boolean isValidLogin )
                 {
+                    getViewState().showProgress(true);
                     if( isValidLogin && Backendless.UserService.CurrentUser() == null )
                     {
                         String currentUserId = Backendless.UserService.loggedInUser();
@@ -102,8 +103,6 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                     } else {
                         getViewState().showProgress(false);
                     }
-
-                    super.handleResponse( isValidLogin );
                 }
             });
     }

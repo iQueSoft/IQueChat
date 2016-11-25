@@ -15,23 +15,22 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.backendless.Backendless;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
 import com.iquesoft.andrew.seedprojectchat.adapters.PreviewPhotoAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.ChatWithFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.MessageUtil;
-import com.iquesoft.andrew.seedprojectchat.util.UploadFileUtil;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFriendFragment;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -104,46 +103,25 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
         this.friend = friend;
     }
 
+    @OnClick(R.id.messageEdit)
+    public void setReadClick(){
+       for (Messages messages : presenter.getFriends().getMessages()){
+           if (!messages.getPublisher_id().equals(Backendless.UserService.CurrentUser().getUserId())){
+               messages.setRead(true);
+           }
+       }
+        presenter.getFriends().saveAsync(new DefaultBackendlessCallback<Friends>(){
+            @Override
+            public void handleResponse(Friends response) {
+                adapter.notifyDataSetChanged();
+                super.handleResponse(response);
+            }
+        });
+    }
+
     @OnClick(R.id.chatSendButton)
     public void sendClick() {
         MessageUtil.sendClick(serverPhotoPaths, serverDocPaths, getActivity(), photoPaths, docPaths, messageEdit, presenter.getFriends().getObjectId(), previewPhotoAdapter);
-//        serverPhotoPaths.clear();
-//        if (photoPaths.size() != 0){
-//            UploadFileUtil.getAndCompressImageWithUri(photoPaths,getActivity()).subscribe(response -> {
-//                serverPhotoPaths.add(response);
-//                if (serverPhotoPaths.size() == photoPaths.size()){
-//                    photoPaths.clear();
-//                    Map<String, String> messageMap = new HashMap<>();
-//                    messageMap.put("message", messageEdit.getText().toString());
-//                    for (int i = 0; i<serverPhotoPaths.size(); i++){
-//                        String imageUri = serverPhotoPaths.get(i);
-//                        messageMap.put("image"+i, imageUri);
-//                    }
-//                    MessageUtil.onSendMessage(messageEdit, messageMap, getActivity(), presenter.getPublishOptions(), presenter.getFriends().getObjectId());
-//                    previewPhotoAdapter.clear();
-//                }
-//            });
-//        }else if (docPaths.size() != 0){
-//           serverDocPaths.clear();
-//            UploadFileUtil.uploadFilesToServer(docPaths, getActivity()).subscribe(response -> {
-//                serverDocPaths.add(response);
-//                if (serverDocPaths.size() == docPaths.size()){
-//                    Map<String, String> messageMap = new HashMap<>();
-//                    messageMap.put("message", messageEdit.getText().toString());
-//                    for (int i = 0; i<serverDocPaths.size(); i++){
-//                        String imageUri = serverDocPaths.get(i);
-//                        messageMap.put("document"+i, imageUri);
-//                    }
-//                    Log.d("document", serverDocPaths.toString());
-//                    MessageUtil.onSendMessage(messageEdit, messageMap, getActivity(), presenter.getPublishOptions(), presenter.getFriends().getObjectId());
-//                    previewPhotoAdapter.clear();
-//                }
-//            });
-//        } else {
-//            Map<String, String> messageMap = new HashMap<>();
-//            messageMap.put("message", messageEdit.getText().toString());
-//            MessageUtil.onSendMessage(messageEdit, messageMap, getActivity(), presenter.getPublishOptions(), presenter.getFriends().getObjectId());
-//        }
     }
 
     public void updateLastVisibleMessage(Messages message) {

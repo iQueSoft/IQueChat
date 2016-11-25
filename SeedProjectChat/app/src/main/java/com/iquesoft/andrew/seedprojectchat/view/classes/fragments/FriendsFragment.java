@@ -14,6 +14,7 @@ import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.UserListAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FriendsFragmentPresenter;
@@ -28,6 +29,7 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.huannguyen.swipetodeleterv.ItemRemovalListener;
 import io.huannguyen.swipetodeleterv.STDRecyclerView;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
@@ -86,6 +88,23 @@ public class FriendsFragment extends BaseFragment implements IFriendsFragment {
 
     public void setUserAdapter(List<Friends> users) {
         UserListAdapter adapter = new UserListAdapter(users, getActivity());
+        adapter.setItemRemovalListener(new ItemRemovalListener() {
+            @Override
+            public void onItemTemporarilyRemoved(int position) {
+
+            }
+
+            @Override
+            public void onItemPermanentlyRemoved(Object item) {
+                Friends friends = (Friends) item;
+                friends.removeAsync(new DefaultBackendlessCallback<>());
+            }
+
+            @Override
+            public void onItemAddedBack(int position) {
+
+            }
+        });
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         stdRecyclerView.setLayoutManager(linearLayoutManager);
         stdRecyclerView.setItemAnimator(new ScaleInAnimator(new OvershootInterpolator(1f)));

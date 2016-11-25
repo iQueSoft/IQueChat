@@ -29,7 +29,6 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IGroupChatC
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
@@ -133,6 +132,7 @@ public class GroupChatContainerPresenter extends MvpPresenter<IGroupChatContaine
         groupChat.setChatName(chatName);
         groupChat.setOwner(Backendless.UserService.CurrentUser());
         groupChat.setUsers(users);
+        groupChat.setUpdated(new Date());
         groupChat.saveAsync(new BackendlessCallback<GroupChat>() {
             @Override
             public void handleResponse(GroupChat groupChat) {

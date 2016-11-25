@@ -1,6 +1,5 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.activity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,12 +16,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
+import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.iquesoft.andrew.seedprojectchat.Network.ApiCall;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseActivity;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultsBackendlessKey;
@@ -33,9 +33,7 @@ import com.iquesoft.andrew.seedprojectchat.di.components.ISeedProjectChatCompone
 import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
-import com.iquesoft.andrew.seedprojectchat.util.DownloadTask;
 import com.iquesoft.andrew.seedprojectchat.util.OnBackPressedListener;
-import com.iquesoft.andrew.seedprojectchat.util.SelectedUri;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.ChatWithFriendFragment;
@@ -48,17 +46,17 @@ import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.TermsAndCondit
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivity;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
-import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryCancelEvent;
-import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryChosenEvent;
-import com.turhanoz.android.reactivedirectorychooser.ui.OnDirectoryChooserFragmentInteraction;
 
-import java.io.File;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 
 import butterknife.ButterKnife;
+import rx.Observable;
 
-public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, IMainActivity, IHasComponent<IMainActivityComponent>, OnDirectoryChooserFragmentInteraction {
+public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, IMainActivity, IHasComponent<IMainActivityComponent> {
 
     private IMainActivityComponent mainActivityComponent;
 
@@ -96,9 +94,8 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     TextView userName;
     TextView userEMail;
 
-    ProgressDialog mProgressDialog;
-
     private Boolean mainFlag = false;
+    private LinkedList<String> listId = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,24 +128,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         userName.setText(Backendless.UserService.CurrentUser().getProperty("name").toString());
         userEMail.setText(Backendless.UserService.CurrentUser().getProperty("email").toString());
 
-        Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, new AsyncCallback<Void>() {
-            @Override
-            public void handleResponse(Void response) {
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Log.i("app", fault.getMessage());
-                Toast.makeText(getBaseContext(), fault.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+        ApiCall.getGroupChatList().subscribe(response -> {
+            Observable.from(response).subscribe(respons -> listId.add(respons.getObjectId()));
+            ApiCall.getCurentFriendList().subscribe(friendses ->{
+                Observable.from(friendses).subscribe(respons -> listId.add(respons.getObjectId()));
+                subscribePushNotification(listId);
+            });
         });
-
-        // instantiate it within the onCreate method
-        mProgressDialog = new ProgressDialog(MainActivity.this);
-        mProgressDialog.setMessage("Load...");
-        mProgressDialog.setIndeterminate(true);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgressDialog.setCancelable(true);
 
         if (mainFlag.equals(false)){
             navigationView.setCheckedItem(R.id.nav_home);
@@ -158,27 +144,37 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
+    private void subscribePushNotification(List<String> chanels){
+        Date date = new Date();
+        date.setTime(date.getTime() + 31536000L);
+        Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, chanels, date, new BackendlessCallback<Void>() {
+            @Override
+            public void handleResponse(Void aVoid) {
+                Log.d("register", "register ok");
+            }
+        });
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean("mainFlag", mainFlag);
-        Log.d("1", "1");
     }
 
-    @Override
-    public void onEvent(OnDirectoryChosenEvent event) {
-        File directoryChosenByUser = event.getFile();
-        Log.d("choice_puth", directoryChosenByUser.getAbsolutePath());
-        // execute this when the downloader must be fired
-        String fileName = SelectedUri.getInstance().getUri().substring(SelectedUri.getInstance().getUri().lastIndexOf('/') + 1, SelectedUri.getInstance().getUri().length());
-        final DownloadTask downloadTask = new DownloadTask(MainActivity.this, directoryChosenByUser.getAbsolutePath() + "/" + fileName, mProgressDialog);
-        downloadTask.execute(SelectedUri.getInstance().getUri());
-        //mProgressDialog.setOnCancelListener(dialog -> downloadTask.cancel(true));
-    }
-
-    @Override
-    public void onEvent(OnDirectoryCancelEvent event) {
-    }
+//    @Override
+//    public void onEvent(OnDirectoryChosenEvent event) {
+//        File directoryChosenByUser = event.getFile();
+//        // execute this when the downloader must be fired
+//        String fileName = SelectedUri.getInstance().getUri().substring(SelectedUri.getInstance().getUri().lastIndexOf('/') + 1, SelectedUri.getInstance().getUri().length());
+//        Log.d("choice_puth", directoryChosenByUser.getAbsolutePath() + "/" + fileName);
+//        final DownloadTask downloadTask = new DownloadTask(MainActivity.this, "/storage/emulated/0/Download/" + fileName, mProgressDialog);
+//        downloadTask.execute(SelectedUri.getInstance().getUri());
+//        //mProgressDialog.setOnCancelListener(dialog -> downloadTask.cancel(true));
+//    }
+//
+//    @Override
+//    public void onEvent(OnDirectoryCancelEvent event) {
+//    }
 
     @Override
     protected void onStop() {
