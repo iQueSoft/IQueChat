@@ -95,9 +95,8 @@ public class LoginFragment extends BaseFragment implements ILoginFragment, Googl
         if (rootView == null) {
             rootView = inflater.inflate(R.layout.fragment_login, container, false);
             ButterKnife.bind(this, rootView);
-            showProgress(true);
-            presenter.autoLogin();
         }
+        presenter.autoLogin();
         return rootView;
     }
 

@@ -25,12 +25,13 @@
             android:maxLines="4"
             android:minLines="1"
             android:fontFamily="cursive"
-            android:textSize="24sp"
+            android:textSize="20sp"
             android:textColor="@android:color/black"
-            android:layout_width="300dp"
+            android:layout_width="match_parent"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
-            android:gravity="center_vertical|center_horizontal" />
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_toStartOf="@+id/tv_last_message_date" />
 
         <FrameLayout
             android:id="@+id/lin1"
@@ -80,21 +81,23 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="8dp" />
 
-        <TextView
-            android:id="@+id/tv_last_message_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/tv_last_message"
-            android:layout_toEndOf="@+id/tv_group_chat_name"
-            android:textSize="10sp"
-            android:gravity="center_vertical|center_horizontal" />
-
         <android.support.v7.widget.RecyclerView
             android:id="@+id/relLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/lin1">
         </android.support.v7.widget.RecyclerView>
+
+        <TextView
+            android:id="@+id/tv_last_message_date"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Text"
+            android:maxLines="2"
+            android:layout_above="@+id/tv_last_message"
+            android:layout_alignParentEnd="true" />
 
     </RelativeLayout>
 

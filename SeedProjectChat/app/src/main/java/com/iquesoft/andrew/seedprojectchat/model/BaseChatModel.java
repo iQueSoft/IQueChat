@@ -1,5 +1,7 @@
 package com.iquesoft.andrew.seedprojectchat.model;
 
+import java.util.Date;
+
 /**
  * Created by andru on 11/14/2016.
  */
@@ -19,6 +21,10 @@ public class BaseChatModel {
     public java.util.Date getUpdated()
     {
         return updated;
+    }
+
+    public void setUpdated(Date updated) {
+        this.updated = updated;
     }
 
     public Double getSerialVersionUID()

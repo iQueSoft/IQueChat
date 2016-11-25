@@ -45,7 +45,7 @@ public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
     private void setRecyclerAdapter(List<BaseChatModel> objectArrayList) {
         Observable.just(objectArrayList)
                 .flatMap(response -> Observable.from(response)
-                        .filter(resp -> resp.getMessages().size() != 0)
+                        .filter(resp -> resp.getMessages().size() != 0).filter(resp -> resp.getUpdated() != null)
                         .toSortedList((messages, messages2) -> messages2.getUpdated()
                                 .compareTo(messages.getUpdated())))
                 .subscribe(response -> {

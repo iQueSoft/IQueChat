@@ -102,6 +102,7 @@ public class MessageUtil {
                 .flatMap(response -> {
                     Messages message = (Messages) response.getData();
                     message.setHeader(response.getHeaders().get("android-ticker-text"));
+                    message.setRead(false);
                     message.setMessage_id(response.getMessageId());
                     return Observable.just(message);
                 }).filter(response -> !response.getTimestamp().equals(lastMessageDate))
@@ -128,7 +129,7 @@ public class MessageUtil {
                 if (serverPhotoPaths.size() == photoPaths.size()){
                     photoPaths.clear();
                     Map<String, String> messageMap = new HashMap<>();
-                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
+                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString() + " "));
                     for (int i = 0; i<serverPhotoPaths.size(); i++){
                         String imageUri = serverPhotoPaths.get(i);
                         messageMap.put("image"+i, imageUri);
@@ -143,7 +144,7 @@ public class MessageUtil {
                 serverDocPaths.add(response);
                 if (serverDocPaths.size() == docPaths.size()){
                     Map<String, String> messageMap = new HashMap<>();
-                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
+                    messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString() + " "));
                     for (int i = 0; i<serverDocPaths.size(); i++){
                         String imageUri = serverDocPaths.get(i);
                         messageMap.put("document"+i, imageUri);
@@ -155,7 +156,7 @@ public class MessageUtil {
             });
         } else {
             Map<String, String> messageMap = new HashMap<>();
-            messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString()));
+            messageMap.put("message", StringEscapeUtils.escapeJava(messageEdit.getText().toString() + " "));
             MessageUtil.onSendMessage(messageEdit, messageMap, context, publishOptions, chanelName);
         }
     }
