@@ -59,7 +59,8 @@
                 android:id="@+id/cim_user_image"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                app:srcCompat="@drawable/seed_logo" />
+                app:srcCompat="@drawable/seed_logo"
+                android:layout_gravity="bottom|right" />
 
         </LinearLayout>
 

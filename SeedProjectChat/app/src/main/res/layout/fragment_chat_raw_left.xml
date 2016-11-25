@@ -3,13 +3,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:emojicon="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
 
     <LinearLayout
         android:id="@+id/content"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_alignParentTop="true"
@@ -34,7 +34,8 @@
                 android:id="@+id/cim_user_image"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                app:srcCompat="@drawable/seed_logo"/>
+                app:srcCompat="@drawable/seed_logo"
+                android:layout_gravity="bottom|left" />
 
             <LinearLayout
                 android:id="@+id/contentWithBackground"
@@ -49,13 +50,12 @@
                 <io.github.rockerhieu.emojicon.EmojiconTextView
                     android:id="@+id/txtMessage"
                     emojicon:emojiconSize="28sp"
-                    android:layout_marginStart="3dp"
-                    android:layout_gravity="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxWidth="240dp"
                     android:textColor="@android:color/black"
-                    android:gravity="center_vertical|center_horizontal" />
+                    android:layout_gravity="center"
+                    android:gravity="fill_vertical|center_horizontal" />
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/recycler_added_data"
