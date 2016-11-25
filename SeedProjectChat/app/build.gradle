@@ -4,14 +4,6 @@ apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'realm-android'
 
 android {
-    signingConfigs {
-        config {
-            keyAlias 'Andrew'
-            keyPassword 'Arhangel2011'
-            storeFile file('C:/Users/andru/Documents/AndroidProgect/SeedProgectChat/SeedProjectChat/app/KeyApp.jks')
-            storePassword 'Arhangel2011'
-        }
-    }
     compileSdkVersion 25
     buildToolsVersion "25.0.0"
 
@@ -23,7 +15,6 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true;
-        signingConfig signingConfigs.config
     }
 
     packagingOptions {
@@ -48,10 +39,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
         }
         debug {
-            signingConfig signingConfigs.config
         }
     }
     compileOptions {
