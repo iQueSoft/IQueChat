@@ -15,11 +15,11 @@
         android:visible="false"
         android:orderInCategory="100"
         android:title="Clear chat message history" />
-    <item
-        android:id="@+id/action_disable_notification"
-        android:visible="true"
-        android:checkable="true"
-        android:title="Disable notification" />
+    <!--<item-->
+        <!--android:id="@+id/action_disable_notification"-->
+        <!--android:visible="true"-->
+        <!--android:checkable="true"-->
+        <!--android:title="Disable notification" />-->
     <item
         android:id="@+id/action_edit_chat"
         android:visible="true"
