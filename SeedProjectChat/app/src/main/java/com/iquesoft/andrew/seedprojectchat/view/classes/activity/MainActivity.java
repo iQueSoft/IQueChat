@@ -17,15 +17,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
-import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
-import com.iquesoft.andrew.seedprojectchat.Network.ApiCall;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseActivity;
-import com.iquesoft.andrew.seedprojectchat.common.DefaultsBackendlessKey;
 import com.iquesoft.andrew.seedprojectchat.di.IHasComponent;
 import com.iquesoft.andrew.seedprojectchat.di.components.DaggerIMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
@@ -47,20 +45,15 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.IMainActivit
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
 import javax.inject.Inject;
 
 import butterknife.ButterKnife;
-import rx.Observable;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener, IMainActivity, IHasComponent<IMainActivityComponent> {
 
     private IMainActivityComponent mainActivityComponent;
 
-    @Inject
+    @InjectPresenter
     MainActivityPresenter presenter;
 
     @Inject
@@ -90,12 +83,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Inject
     MainFragment mainFragment;
 
-    CircularImageView headerImage;
-    TextView userName;
-    TextView userEMail;
-
     private Boolean mainFlag = false;
-    private LinkedList<String> listId = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,25 +104,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
+        ButterKnife.bind(navigationView.getHeaderView(0));
         View headerView = navigationView.getHeaderView(0);
-        headerImage = (CircularImageView) headerView.findViewById(R.id.header_image_view);
-        userName = (TextView) headerView.findViewById(R.id.tv_user_name);
-        userEMail = (TextView) headerView.findViewById(R.id.tv_last_message);
+        CircularImageView headerImage = (CircularImageView) headerView.findViewById(R.id.header_image_view);
+        TextView userName = (TextView) headerView.findViewById(R.id.tv_user_name);
+        TextView userEMail = (TextView) headerView.findViewById(R.id.tv_last_message);
         if (Backendless.UserService.CurrentUser().getProperty("photo") != null) {
             Uri uri = Uri.parse(Backendless.UserService.CurrentUser().getProperty("photo").toString());
             Picasso.with(getBaseContext()).load(uri).placeholder(R.drawable.seed_logo).into(headerImage);
         }
         userName.setText(Backendless.UserService.CurrentUser().getProperty("name").toString());
         userEMail.setText(Backendless.UserService.CurrentUser().getProperty("email").toString());
-
-        ApiCall.getGroupChatList().subscribe(response -> {
-            Observable.from(response).subscribe(respons -> listId.add(respons.getObjectId()));
-            ApiCall.getCurentFriendList().subscribe(friendses ->{
-                Observable.from(friendses).subscribe(respons -> listId.add(respons.getObjectId()));
-                subscribePushNotification(listId);
-            });
-        });
 
         if (mainFlag.equals(false)){
             navigationView.setCheckedItem(R.id.nav_home);
@@ -144,37 +124,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    private void subscribePushNotification(List<String> chanels){
-        Date date = new Date();
-        date.setTime(date.getTime() + 31536000L);
-        Backendless.Messaging.registerDevice(DefaultsBackendlessKey.GOOGLE_PROJECT_ID, chanels, date, new BackendlessCallback<Void>() {
-            @Override
-            public void handleResponse(Void aVoid) {
-                Log.d("register", "register ok");
-            }
-        });
-    }
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean("mainFlag", mainFlag);
     }
-
-//    @Override
-//    public void onEvent(OnDirectoryChosenEvent event) {
-//        File directoryChosenByUser = event.getFile();
-//        // execute this when the downloader must be fired
-//        String fileName = SelectedUri.getInstance().getUri().substring(SelectedUri.getInstance().getUri().lastIndexOf('/') + 1, SelectedUri.getInstance().getUri().length());
-//        Log.d("choice_puth", directoryChosenByUser.getAbsolutePath() + "/" + fileName);
-//        final DownloadTask downloadTask = new DownloadTask(MainActivity.this, "/storage/emulated/0/Download/" + fileName, mProgressDialog);
-//        downloadTask.execute(SelectedUri.getInstance().getUri());
-//        //mProgressDialog.setOnCancelListener(dialog -> downloadTask.cancel(true));
-//    }
-//
-//    @Override
-//    public void onEvent(OnDirectoryCancelEvent event) {
-//    }
 
     @Override
     protected void onStop() {
@@ -265,7 +219,6 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         replaceFragment(groupChatContainer);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.

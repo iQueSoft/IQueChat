@@ -1,6 +1,5 @@
 package com.iquesoft.andrew.seedprojectchat.di.modules;
 
-import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FindFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.GroupChatContainerPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.GroupChatFragmentPresenter;
@@ -28,10 +27,10 @@ public class MainActivityModule {
         return view;
     }
 
-    @Provides
-    MainActivityPresenter provideMainActivityPresenter(IMainActivity view){
-        return new MainActivityPresenter(view);
-    }
+//    @Provides
+//    MainActivityPresenter provideMainActivityPresenter(IMainActivity view){
+//        return new MainActivityPresenter(view);
+//    }
 
     @Provides
     FindFriendFragmentPresenter provideFindFriendFragmentPresenter(){
