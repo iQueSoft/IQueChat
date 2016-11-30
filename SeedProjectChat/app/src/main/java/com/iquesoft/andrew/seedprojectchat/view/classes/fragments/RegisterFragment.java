@@ -1,6 +1,5 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
 import com.iquesoft.andrew.seedprojectchat.di.components.ILoginActivityComponent;
@@ -36,7 +36,7 @@ import static android.app.Activity.RESULT_OK;
 
 public class RegisterFragment extends BaseFragment implements IRegisterFragment {
 
-    @Inject
+    @InjectPresenter
     RegisterFragmentPresenter presenter;
 
     @Inject
@@ -52,13 +52,12 @@ public class RegisterFragment extends BaseFragment implements IRegisterFragment 
     CircularImageView circleImageView;
 
     private View rootView;
-    private LoginActivity loginActivity;
 
     static final int GALLERY_REQUEST = 1;
 
     @OnClick(R.id.register_button)
     void registerButtonClick(View view) {
-        presenter.onRegisterButtonClicked(eMailTV, usernameTV, passwordTV);
+        presenter.onRegisterButtonClicked(eMailTV, usernameTV, passwordTV, validateUtil,(LoginActivity) getActivity());
     }
 
     @OnClick(R.id.cim_photo_view)
@@ -81,29 +80,6 @@ public class RegisterFragment extends BaseFragment implements IRegisterFragment 
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         this.getComponent(ILoginActivityComponent.class).inject(this);
-        loginActivity = (LoginActivity) getActivity();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        presenter.init(this);
-    }
-
-
-    @Override
-    public Context getActivityContext() {
-        return getActivity();
-    }
-
-    @Override
-    public ValidateUtil getValidateUtil() {
-        return validateUtil;
-    }
-
-    @Override
-    public LoginActivity getLoginActivity() {
-        return loginActivity;
     }
 
     public void photoSelector() {
@@ -130,7 +106,7 @@ public class RegisterFragment extends BaseFragment implements IRegisterFragment 
         switch (requestCode) {
             case GALLERY_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    presenter.uploadUserPhoto(image, circleImageView, eMailTV.getText().toString());
+                    presenter.uploadUserPhoto(image, circleImageView, eMailTV.getText().toString(), getActivity());
                 }
         }
     }

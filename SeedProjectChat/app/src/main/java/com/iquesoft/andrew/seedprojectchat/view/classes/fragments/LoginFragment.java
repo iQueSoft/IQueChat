@@ -219,7 +219,7 @@ public class LoginFragment extends BaseFragment implements ILoginFragment, Googl
             } else {
                 loggedInUser.setProperty(ChatUser.DEVICEID, deviceId);
                 loggedInUser.setProperty(ChatUser.ONLINE, true);
-                updateCurentUser.update(loggedInUser, getActivity());
+                updateCurentUser.update(loggedInUser);
             }
         });
         thread.start();

@@ -27,11 +27,6 @@ public class MainActivityModule {
         return view;
     }
 
-//    @Provides
-//    MainActivityPresenter provideMainActivityPresenter(IMainActivity view){
-//        return new MainActivityPresenter(view);
-//    }
-
     @Provides
     FindFriendFragmentPresenter provideFindFriendFragmentPresenter(){
         return new FindFriendFragmentPresenter();

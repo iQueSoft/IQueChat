@@ -23,7 +23,6 @@ import android.widget.FrameLayout;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
-import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.iquesoft.andrew.seedprojectchat.Manifest;
 import com.iquesoft.andrew.seedprojectchat.R;
@@ -232,18 +231,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
 
     @OnClick(R.id.messageEdit)
     public void setReadClick(){
-        for (Messages messages : presenter.getCurentGroupChat().getMessages()){
-            if (!messages.getPublisher_id().equals(Backendless.UserService.CurrentUser().getUserId())){
-                messages.setRead(true);
-            }
-        }
-        presenter.getCurentGroupChat().saveAsync(new DefaultBackendlessCallback<GroupChat>(){
-            @Override
-            public void handleResponse(GroupChat response) {
-                adapter.notifyDataSetChanged();
-                super.handleResponse(response);
-            }
-        });
+        presenter.setRead(adapter, true);
     }
 
     public void setCurentGroupChat(GroupChat groupChat){
@@ -287,14 +275,7 @@ public class GroupChatFragment extends BaseFragment implements IGroupChatFragmen
                 presenter.createDialogGroupChat(getActivity(), getActivity().getLayoutInflater());
                 break;
             case R.id.action_clear_history:
-                presenter.getCurentGroupChat().getMessages().clear();
-                presenter.getCurentGroupChat().saveAsync(new BackendlessCallback<GroupChat>() {
-                    @Override
-                    public void handleResponse(GroupChat groupChat) {
-                        adapter.getMessageList().clear();
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+                presenter.clearHistory(adapter);
                 break;
         }
         return super.onOptionsItemSelected(item);

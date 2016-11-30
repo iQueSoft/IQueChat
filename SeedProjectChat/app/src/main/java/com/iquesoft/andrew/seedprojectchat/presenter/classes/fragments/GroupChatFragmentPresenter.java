@@ -23,10 +23,12 @@ import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.messaging.PublishOptions;
 import com.backendless.persistence.BackendlessDataQuery;
 import com.iquesoft.andrew.seedprojectchat.R;
+import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
 import com.iquesoft.andrew.seedprojectchat.adapters.GroupChatFriendListAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
+import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IGroupChatFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.MessageUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.activity.MainActivity;
@@ -221,22 +223,30 @@ public class GroupChatFragmentPresenter extends MvpPresenter<IGroupChatFragment>
         }
     }
 
-//    private void subscribe() {
-//            Backendless.Messaging.subscribe(curentGroupChat.getObjectId(), new BackendlessCallback<List<Message>>() {
-//                @Override
-//                public void handleResponse(List<Message> response) {
-//                    messages.onNext(response);
-//                }
-//
-//                @Override
-//                public void handleFault(BackendlessFault fault) {
-//
-//                }
-//            }, subscriptionOptions, new BackendlessCallback<Subscription>() {
-//                @Override
-//                public void handleResponse(Subscription response) {
-//                    subscription = response;
-//                }
-//            });
-//    }
+    public void setRead(ChatFragmentAdapter adapter, Boolean setRead){
+        for (Messages messages : getCurentGroupChat().getMessages()){
+            if (!messages.getPublisher_id().equals(Backendless.UserService.CurrentUser().getUserId())){
+                messages.setRead(setRead);
+            }
+        }
+        getCurentGroupChat().saveAsync(new DefaultBackendlessCallback<GroupChat>(){
+            @Override
+            public void handleResponse(GroupChat response) {
+                adapter.notifyDataSetChanged();
+                super.handleResponse(response);
+            }
+        });
+    }
+
+    public void clearHistory(ChatFragmentAdapter adapter){
+        getCurentGroupChat().getMessages().clear();
+        getCurentGroupChat().saveAsync(new BackendlessCallback<GroupChat>() {
+            @Override
+            public void handleResponse(GroupChat groupChat) {
+                adapter.getMessageList().clear();
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
 }
