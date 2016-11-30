@@ -38,7 +38,6 @@ public class MyInviteFragmentPresenter extends MvpPresenter<IMyInvateFragment> i
                 "status = '1'";
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();
         dataQuery.setWhereClause(whereClause);
-        Thread myInviteFriendsListThread = new Thread(() -> {
             Friends.findAsync(dataQuery, new BackendlessCallback<BackendlessCollection<Friends>>(){
                 @Override
                 public void handleResponse(BackendlessCollection<Friends> response) {
@@ -46,8 +45,6 @@ public class MyInviteFragmentPresenter extends MvpPresenter<IMyInvateFragment> i
                     myInviteFriendsBS.onNext(response.getData());
                 }
             });
-        });
-        myInviteFriendsListThread.start();
         return myInviteFriendsBS;
     }
 

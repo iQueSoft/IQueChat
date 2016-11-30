@@ -2,11 +2,14 @@ package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
+import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.persistence.BackendlessDataQuery;
+import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
+import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.presenter.interfaces.fragments.IChatWithFriendFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.MessageUtil;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IChatWithFriendFragment;
@@ -55,6 +58,21 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
             e.printStackTrace();
         }
         super.detachView(view);
+    }
+
+    public void setReadClick(ChatFragmentAdapter adapter){
+        for (Messages messages : getFriends().getMessages()){
+            if (!messages.getPublisher_id().equals(Backendless.UserService.CurrentUser().getUserId())){
+                messages.setRead(true);
+            }
+        }
+        getFriends().saveAsync(new DefaultBackendlessCallback<Friends>(){
+            @Override
+            public void handleResponse(Friends response) {
+                adapter.notifyDataSetChanged();
+                super.handleResponse(response);
+            }
+        });
     }
 
     @Override
