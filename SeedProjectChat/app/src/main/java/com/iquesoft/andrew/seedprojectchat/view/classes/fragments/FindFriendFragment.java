@@ -10,13 +10,13 @@ import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.BackendlessUser;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.FindFriendAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.FindFriendFragmentPresenter;
-import com.iquesoft.andrew.seedprojectchat.util.ConvertBackendlessUserToChatUser;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IFindFriendFragment;
 
 import java.util.List;
@@ -35,14 +35,10 @@ import rx.schedulers.Schedulers;
 /**
  * Created by andrew on 8/31/2016.
  */
-// TODO: inject Moxy
 public class FindFriendFragment extends BaseFragment implements IFindFriendFragment {
 
-    @Inject
+    @InjectPresenter
     FindFriendFragmentPresenter presenter;
-
-    @Inject
-    ConvertBackendlessUserToChatUser convertBackendlessUserToChatUser;
 
     @Inject
     FriendsFragment friendsFragment;
@@ -54,11 +50,10 @@ public class FindFriendFragment extends BaseFragment implements IFindFriendFragm
     @BindView(R.id.recycler_view_find_user)
     RecyclerView recyclerViewFindUsers;
 
-    private FindFriendAdapter adapter;
     private Subscription getFriendsSubscription;
 
     @OnClick(R.id.btn_find_users)
-    public void findClick(View view) {
+    public void findClick() {
         getFriendsSubscription = friendsFragment.getCurentFriendList().subscribe(response ->{
             presenter.getBackendlessUsers(username.getText().toString(), response).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(this::setUserAdapter);
         });
@@ -83,11 +78,10 @@ public class FindFriendFragment extends BaseFragment implements IFindFriendFragm
     @Override
     public void onResume() {
         super.onResume();
-        presenter.init(this);
     }
 
     private void setUserAdapter(List<BackendlessUser> users) {
-        adapter = new FindFriendAdapter(users, getActivity());
+        FindFriendAdapter adapter = new FindFriendAdapter(users, getActivity());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerViewFindUsers.setLayoutManager(linearLayoutManager);
         recyclerViewFindUsers.setItemAnimator(new ScaleInAnimator(new OvershootInterpolator(1f)));
