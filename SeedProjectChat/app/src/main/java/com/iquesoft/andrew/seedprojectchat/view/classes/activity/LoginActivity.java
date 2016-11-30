@@ -1,11 +1,11 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.activity;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseActivity;
 import com.iquesoft.andrew.seedprojectchat.di.IHasComponent;
@@ -29,7 +29,7 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
 
     private ILoginActivityComponent loginActivityComponent;
 
-    @Inject
+    @InjectPresenter
     LoginActivityPresenter presenter;
 
     @Inject
@@ -64,12 +64,6 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
         fragmentTransaction.replace(R.id.container, fragment, TAG);
         fragmentTransaction.addToBackStack("backpressed stack");
         fragmentTransaction.commit();
-    }
-
-
-    @Override
-    public Context getContext() {
-        return getBaseContext();
     }
 
     @Override

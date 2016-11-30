@@ -15,12 +15,10 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
-import com.backendless.Backendless;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.adapters.ChatFragmentAdapter;
 import com.iquesoft.andrew.seedprojectchat.adapters.PreviewPhotoAdapter;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
-import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
@@ -105,18 +103,7 @@ public class ChatWithFriendFragment extends BaseFragment implements IChatWithFri
 
     @OnClick(R.id.messageEdit)
     public void setReadClick(){
-       for (Messages messages : presenter.getFriends().getMessages()){
-           if (!messages.getPublisher_id().equals(Backendless.UserService.CurrentUser().getUserId())){
-               messages.setRead(true);
-           }
-       }
-        presenter.getFriends().saveAsync(new DefaultBackendlessCallback<Friends>(){
-            @Override
-            public void handleResponse(Friends response) {
-                adapter.notifyDataSetChanged();
-                super.handleResponse(response);
-            }
-        });
+       presenter.setReadClick(adapter);
     }
 
     @OnClick(R.id.chatSendButton)

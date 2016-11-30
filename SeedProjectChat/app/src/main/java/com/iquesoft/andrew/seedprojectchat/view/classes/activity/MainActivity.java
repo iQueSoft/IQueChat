@@ -1,6 +1,5 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.activity;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -11,7 +10,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,9 +17,6 @@ import android.widget.TextView;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.Backendless;
-import com.backendless.BackendlessUser;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseActivity;
 import com.iquesoft.andrew.seedprojectchat.di.IHasComponent;
@@ -29,7 +24,6 @@ import com.iquesoft.andrew.seedprojectchat.di.components.DaggerIMainActivityComp
 import com.iquesoft.andrew.seedprojectchat.di.components.IMainActivityComponent;
 import com.iquesoft.andrew.seedprojectchat.di.components.ISeedProjectChatComponent;
 import com.iquesoft.andrew.seedprojectchat.di.modules.MainActivityModule;
-import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.MainActivityPresenter;
 import com.iquesoft.andrew.seedprojectchat.util.OnBackPressedListener;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
@@ -132,25 +126,13 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     @Override
     protected void onStop() {
-        Thread onlineThread = new Thread(() -> {
-            if (Backendless.UserService.CurrentUser() != null) {
-                BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
-                backendlessUser.setProperty(ChatUser.ONLINE, false);
-                updateCurentUser.update(backendlessUser, this);
-            }
-        });
-        onlineThread.start();
+        presenter.setOnline(updateCurentUser, false);
         super.onStop();
     }
 
     @Override
     protected void onResume() {
-        Thread onlineThread = new Thread(() -> {
-            BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
-            backendlessUser.setProperty(ChatUser.ONLINE, true);
-            updateCurentUser.update(backendlessUser, this);
-        });
-        onlineThread.start();
+        presenter.setOnline(updateCurentUser, true);
         super.onResume();
     }
 
@@ -195,20 +177,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         if (id == R.id.action_logout) {
-            BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
-            backendlessUser.setProperty(ChatUser.ONLINE, false);
-            updateCurentUser.update(backendlessUser, getBaseContext());
-            Backendless.UserService.logout(new AsyncCallback<Void>() {
-                public void handleResponse(Void response) {
-                    // user has been logged out.
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                    finish();
-                }
-
-                public void handleFault(BackendlessFault fault) {
-                    // something went wrong and logout failed, to get the error code call fault.getCode()
-                }
-            });
+            presenter.logOut(this, updateCurentUser);
             return true;
         }
 
@@ -236,29 +205,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if (id == R.id.nav_about_us) {
             replaceFragment(aboutUsFragment);
         } else if (id == R.id.nav_share) {
-            Uri imageUri =  Uri.parse("android.resource://com.iquesoft.andrew.seedprojectchat/" + R.drawable.seed_logo);
-            Intent shareIntent = new Intent();
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "IQueChat");
-            shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-            shareIntent.setType("image/jpeg");
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(shareIntent, "send"));
+            presenter.share(this);
         } else if (id == R.id.nav_logout) {
-            BackendlessUser backendlessUser = Backendless.UserService.CurrentUser();
-            backendlessUser.setProperty(ChatUser.ONLINE, false);
-            updateCurentUser.update(backendlessUser, this);
-            Backendless.UserService.logout(new AsyncCallback<Void>() {
-                public void handleResponse(Void response) {
-                    // user has been logged out.
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                    finish();
-                }
-
-                public void handleFault(BackendlessFault fault) {
-                    Log.d("logout", fault.getMessage());
-                }
-            });
+            presenter.logOut(this, updateCurentUser);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

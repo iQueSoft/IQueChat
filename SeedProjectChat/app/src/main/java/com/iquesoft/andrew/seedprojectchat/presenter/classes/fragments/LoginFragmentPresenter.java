@@ -41,7 +41,6 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
 
     public void onLoginButtonClicked(String userEMail, String password, boolean rememberLogin, LoginActivity loginActivity, UpdateCurentUser updateCurentUser)
     {
-        Thread loginThread = new Thread(() -> {
             Backendless.UserService.login( userEMail, password, new DefaultBackendlessCallback<BackendlessUser>()
             {
                 public void handleResponse( BackendlessUser backendlessUser )
@@ -51,17 +50,17 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                         String deviceId = Build.SERIAL;
                         if( deviceId.isEmpty() )
                         {
-                            Toast.makeText(loginActivity.getContext(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
+                            Toast.makeText(loginActivity.getBaseContext(), "Could not retrieve DEVICE ID", Toast.LENGTH_SHORT ).show();
                             return;
                         } else {
                             backendlessUser.setProperty(ChatUser.DEVICEID, deviceId);
                             backendlessUser.setProperty(ChatUser.ONLINE, true);
-                            updateCurentUser.update(backendlessUser, loginActivity.getContext());
+                            updateCurentUser.update(backendlessUser);
                         }
                     });
                     thread.start();
                     Log.i("login", backendlessUser.toString());
-                    loginActivity.startActivity(new Intent(loginActivity.getContext(), MainActivity.class));
+                    loginActivity.startActivity(new Intent(loginActivity.getBaseContext(), MainActivity.class));
                     getViewState().showProgress(false);
                     loginActivity.finish();
                 }
@@ -72,8 +71,6 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                     getViewState().showProgress(false);
                 }
             }, rememberLogin );
-        });
-        loginThread.start();
     }
 
     public void autoLogin(){
@@ -139,8 +136,8 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                 String token = null;
                 try
                 {
-                    token = GoogleAuthUtil.getToken( loginActivity.getContext(), accountName, scopes );
-                    GoogleAuthUtil.invalidateToken( loginActivity.getContext(), token );
+                    token = GoogleAuthUtil.getToken( loginActivity.getBaseContext(), accountName, scopes );
+                    GoogleAuthUtil.invalidateToken( loginActivity.getBaseContext(), token );
                     handleAccessTokenInBackendless( acct.getIdToken(), token, acct.getPhotoUrl().toString(), stayLoggedIn);
                 }
                 catch( UserRecoverableAuthException e )

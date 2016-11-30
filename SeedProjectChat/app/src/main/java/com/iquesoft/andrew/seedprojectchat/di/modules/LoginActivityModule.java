@@ -1,6 +1,5 @@
 package com.iquesoft.andrew.seedprojectchat.di.modules;
 
-import com.iquesoft.andrew.seedprojectchat.presenter.classes.activity.LoginActivityPresenter;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.activity.ILoginActivity;
 
 import dagger.Module;
@@ -20,12 +19,7 @@ public class LoginActivityModule {
     }
 
     @Provides
-    public ILoginActivity provideView(){
+    ILoginActivity provideView(){
         return view;
-    }
-
-    @Provides
-    public LoginActivityPresenter provideLoginActivityPresenter (ILoginActivity view){
-        return new LoginActivityPresenter(view);
     }
 }

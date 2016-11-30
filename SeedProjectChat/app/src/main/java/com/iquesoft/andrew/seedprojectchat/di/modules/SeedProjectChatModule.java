@@ -5,7 +5,6 @@ import android.app.Application;
 import com.iquesoft.andrew.seedprojectchat.app.SeedProjectChatApp;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
 import com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments.RegisterFragmentPresenter;
-import com.iquesoft.andrew.seedprojectchat.util.ConvertBackendlessUserToChatUser;
 import com.iquesoft.andrew.seedprojectchat.util.UpdateCurentUser;
 import com.iquesoft.andrew.seedprojectchat.util.ValidateUtil;
 import com.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment;
@@ -86,12 +85,6 @@ public class SeedProjectChatModule {
     @Singleton
     FindFriendFragment provideFindFriendFragment(){
         return new FindFriendFragment();
-    }
-
-    @Provides
-    @Singleton
-    ConvertBackendlessUserToChatUser provideConvertBackendlessUserToChatUser(){
-        return new ConvertBackendlessUserToChatUser();
     }
 
     @Provides
