@@ -59,7 +59,6 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                         }
                     });
                     thread.start();
-                    Log.i("login", backendlessUser.toString());
                     loginActivity.startActivity(new Intent(loginActivity.getBaseContext(), MainActivity.class));
                     getViewState().showProgress(false);
                     loginActivity.finish();
