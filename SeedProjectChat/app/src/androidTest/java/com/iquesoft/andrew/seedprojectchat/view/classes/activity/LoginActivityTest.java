@@ -24,20 +24,16 @@ import static org.hamcrest.Matchers.allOf;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class SignInTest {
+public class LoginActivityTest {
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
 
     @Test
-    public synchronized void signInTest() {
+    public void loginActivityTest() {
         ViewInteraction appCompatAutoCompleteTextView = onView(
                 withId(R.id.email));
-        appCompatAutoCompleteTextView.perform(scrollTo(), click());
-
-        ViewInteraction appCompatAutoCompleteTextView2 = onView(
-                withId(R.id.email));
-        appCompatAutoCompleteTextView2.perform(scrollTo(), replaceText("AndruxaOsetrov@yandex.ru"), closeSoftKeyboard());
+        appCompatAutoCompleteTextView.perform(scrollTo(), replaceText("AndruxaOsetrov@yandex.ru"), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText = onView(
                 withId(R.id.password_tv));
@@ -49,4 +45,5 @@ public class SignInTest {
                                 withParent(withId(R.id.login_form))))));
         appCompatButton.perform(scrollTo(), click());
     }
+
 }
