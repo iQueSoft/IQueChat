@@ -11,10 +11,10 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import com.iquesoft.andrew.seedprojectchat.R;
+import com.iquesoft.andrew.seedprojectchat.RecyclerViewMatcher;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +27,7 @@ import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static android.support.test.espresso.contrib.RecyclerViewActions.scrollToPosition;
+import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
@@ -42,9 +43,6 @@ public class LoginActivityTest2 {
 
     @Test
     public synchronized void loginActivityTest2() throws InterruptedException {
-//        ViewInteraction appCompatAutoCompleteTextView = onView(
-//                withId(R.id.email));
-//        appCompatAutoCompleteTextView.perform(scrollTo(), click());
 
         ViewInteraction appCompatButton1 = onView(
                 allOf(withId(android.R.id.button1), withText("Update")));
@@ -80,22 +78,15 @@ public class LoginActivityTest2 {
 
         wait(3000);
 
-        //checkRecyclerViewHasText(R.id.txtMessage, "ESP ");
-
         scrollRecyclerView(R.id.messagesContainer, 0);
 
-        wait(3000);
-//        ViewInteraction textView = onView(
-//                allOf(withId(R.id.txtMessage), withText("ESP "),
-//                        childAtPosition(
-//                                allOf(withId(R.id.contentWithBackground),
-//                                        childAtPosition(
-//                                                IsInstanceOf.instanceOf(android.widget.LinearLayout.class),
-//                                                0)),
-//                                0),
-//                        isDisplayed()));
-//        textView.check(matches(withText("ESP ")));
+        onView(withRecyclerView(R.id.messagesContainer).atPosition(0))
+                .check(matches(hasDescendant(withText("ESP "))));
 
+    }
+
+    public static RecyclerViewMatcher withRecyclerView(final int recyclerViewId) {
+        return new RecyclerViewMatcher(recyclerViewId);
     }
 
     private void editText(int viewId, String text) {
@@ -115,11 +106,11 @@ public class LoginActivityTest2 {
     private void checkRecyclerViewHasText(int textViewId, String text) {
         ViewInteraction textView = onView(
                 allOf(withId(textViewId), withText(text),
-                        childAtPosition(
-                                childAtPosition(
-                                        IsInstanceOf.instanceOf(android.widget.FrameLayout.class),
-                                        0),
-                                1),
+//                        childAtPosition(
+//                                childAtPosition(
+//                                        IsInstanceOf.instanceOf(android.widget.RelativeLayout.class),
+//                                        0),
+//                                1),
                         isDisplayed()));
         textView.check(matches(withText(text)));
     }
@@ -213,7 +204,7 @@ public class LoginActivityTest2 {
 //    }
 
 
-    static Matcher<View> childAtPosition(
+    private static Matcher<View> childAtPosition(
             final Matcher<View> parentMatcher, final int position) {
 
         return new TypeSafeMatcher<View>() {
