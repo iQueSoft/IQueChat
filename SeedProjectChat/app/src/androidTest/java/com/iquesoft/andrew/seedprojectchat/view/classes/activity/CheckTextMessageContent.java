@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.replaceText;
@@ -36,7 +37,7 @@ import static org.hamcrest.Matchers.allOf;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class LoginActivityTest2 {
+public class CheckTextMessageContent {
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -47,6 +48,24 @@ public class LoginActivityTest2 {
         ViewInteraction appCompatButton1 = onView(
                 allOf(withId(android.R.id.button1), withText("Update")));
         appCompatButton1.perform(scrollTo(), click());
+
+        pressBack();
+
+        ViewInteraction appCompatButton4 = onView(
+                allOf(withId(R.id.but_facebook), withText("Facebook Login")));
+        appCompatButton4.perform(scrollTo(), click());
+
+        wait(10000L);
+
+        pressBack();
+
+        ViewInteraction appCompatButton3 = onView(
+                allOf(withId(R.id.but_twitter), withText("Twitter  login")));
+        appCompatButton3.perform(scrollTo(), click());
+
+        wait(10000L);
+
+        pressBack();
 
         ViewInteraction appCompatAutoCompleteTextView2 = onView(
                 withId(R.id.email));
@@ -63,6 +82,7 @@ public class LoginActivityTest2 {
         appCompatButton.perform(scrollTo(), click());
 
         wait(10000);
+
         clickOnRecyclerView(R.id.main_screen_recycler_view, 0);
 
         ViewInteraction emojiconEditText = onView(
@@ -82,6 +102,8 @@ public class LoginActivityTest2 {
 
         onView(withRecyclerView(R.id.messagesContainer).atPosition(0))
                 .check(matches(hasDescendant(withText("ESP "))));
+
+        wait(3000);
 
     }
 
