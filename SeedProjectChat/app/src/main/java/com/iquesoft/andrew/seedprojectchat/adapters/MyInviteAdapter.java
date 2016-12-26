@@ -52,7 +52,14 @@ public class MyInviteAdapter extends RecyclerView.Adapter<MyInviteAdapter.ViewHo
             }
             holder.tvUserEMail.setText(user.getEmail());
 
-            holder.denial.setOnClickListener(view -> curentFriend.removeAsync(new DefaultBackendlessCallback<Long>()));
+            holder.denial.setOnClickListener(view -> curentFriend.removeAsync(new DefaultBackendlessCallback<Long>(){
+                @Override
+                public void handleResponse(Long response) {
+                    users.remove(holder.getAdapterPosition());
+                    notifyItemRemoved(holder.getAdapterPosition());
+                    super.handleResponse(response);
+                }
+            }));
         }
     }
 
