@@ -100,7 +100,7 @@ public class CheckTextMessageContent {
 
         scrollRecyclerView(R.id.messagesContainer, 0);
 
-        onView(withRecyclerView(R.id.messagesContainer).atPosition(0))
+        onView(withRecyclerView(R.id.messagesContainer).atPosition(0)).perform()
                 .check(matches(hasDescendant(withText("ESP "))));
 
         wait(3000);
