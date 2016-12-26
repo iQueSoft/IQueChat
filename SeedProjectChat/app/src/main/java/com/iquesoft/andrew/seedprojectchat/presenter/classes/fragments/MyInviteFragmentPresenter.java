@@ -14,6 +14,7 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.IMyInvateFr
 
 import java.util.List;
 
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.BehaviorSubject;
@@ -24,10 +25,18 @@ import rx.subjects.BehaviorSubject;
 @InjectViewState
 public class MyInviteFragmentPresenter extends MvpPresenter<IMyInvateFragment> implements IMyInviteFragmentPresenter {
 
+    private Subscription subscription;
+
     @Override
-    protected void onFirstViewAttach() {
-        super.onFirstViewAttach();
-        getMyInviteFriendsList().subscribe(response -> getViewState().setUserAdapter(response));
+    public void attachView(IMyInvateFragment view) {
+        subscription = getMyInviteFriendsList().subscribe(response -> getViewState().setUserAdapter(response));
+        super.attachView(view);
+    }
+
+    @Override
+    public void detachView(IMyInvateFragment view) {
+        subscription.unsubscribe();
+        super.detachView(view);
     }
 
     public BehaviorSubject<List<Friends>> getMyInviteFriendsList(){

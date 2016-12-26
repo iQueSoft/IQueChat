@@ -36,7 +36,9 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     @Override
     public void attachView(IChatWithFriendFragment view) {
         MessageUtil.subscribe(friends.getObjectId());
-        subscribeUpdateNewMessages = MessageUtil.obsSaveNewMessage(friends.getMessages().get(friends.getMessages().size() - 1).getTimestamp()).subscribe(response -> {
+        subscribeUpdateNewMessages = MessageUtil
+                .obsSaveNewMessage(friends.getMessages().get(friends.getMessages().size() - 1).getTimestamp())
+                .subscribe(response -> {
             getFriends().getMessages().add(response);
             getFriends().saveAsync(new DefaultBackendlessCallback<>());
             MessageUtil.sendPushNotification(response, friends.getObjectId());
