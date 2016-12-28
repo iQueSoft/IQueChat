@@ -99,6 +99,8 @@ public class FrendRequestTest {
                 allOf(withId(R.id.design_menu_item_text), withText("Friends"), isDisplayed()));
         appCompatCheckedTextView.perform(click());
 
+        wait(3000);
+
         ViewInteraction floatingActionButton = onView(
                 allOf(withId(R.id.fab_add_friend),
                         withParent(allOf(withId(R.id.fragment_friends_container),
