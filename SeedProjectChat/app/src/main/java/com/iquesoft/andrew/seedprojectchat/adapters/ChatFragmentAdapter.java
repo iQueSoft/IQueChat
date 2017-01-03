@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.rockerhieu.emojicon.EmojiconTextView;
-import rx.Observable;
 
 /**
  * Created by andru on 9/7/2016.
@@ -89,7 +88,7 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
             } else {
                 holder.content.setBackgroundColor(ResourcesCompat.getColor(context.getResources(), R.color.material_light, null));
             }
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
 
@@ -100,10 +99,13 @@ public class ChatFragmentAdapter extends RecyclerView.Adapter<ChatFragmentAdapte
             Backendless.UserService.findById(messages.getPublisher_id(), new BackendlessCallback<BackendlessUser>() {
                 @Override
                 public void handleResponse(BackendlessUser backendlessUser) {
-                    Observable.just(backendlessUser).subscribe(response -> {
-                        Uri uri = Uri.parse(response.getProperty(ChatUser.PHOTO).toString());
-                        Picasso.with(context).load(uri).placeholder(R.drawable.placeholder).error(R.drawable.error).into(holder.cimUserImage);
-                    });
+                    Uri uri = null;
+                    try {
+                        uri = Uri.parse(backendlessUser.getProperty(ChatUser.PHOTO).toString());
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    }
+                    Picasso.with(context).load(uri).placeholder(R.drawable.placeholder).error(R.drawable.error).into(holder.cimUserImage);
                 }
             });
         }
