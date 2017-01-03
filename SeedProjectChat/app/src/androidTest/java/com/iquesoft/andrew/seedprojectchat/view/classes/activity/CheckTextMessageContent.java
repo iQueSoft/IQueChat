@@ -103,7 +103,15 @@ public class CheckTextMessageContent {
         onView(withRecyclerView(R.id.messagesContainer).atPosition(0)).perform()
                 .check(matches(hasDescendant(withText("ESP "))));
 
-        wait(3000);
+//        pressBack();
+//
+//        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+//
+//        ViewInteraction appCompatTextView = onView(
+//                allOf(withId(R.id.title), withText("Logout"), isDisplayed()));
+//        appCompatTextView.perform(click());
+//
+//        wait(3000);
 
     }
 

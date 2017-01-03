@@ -47,31 +47,10 @@ public class FrendRequestTest {
 
     @Test
     public synchronized void frendRequestTest() throws Exception {
+
         ViewInteraction appCompatButton = onView(
                 allOf(withId(android.R.id.button1), withText("Update")));
         appCompatButton.perform(scrollTo(), click());
-
-//        ViewInteraction appCompatButton2 = onView(
-//                allOf(withId(R.id.email_register_button), withText("Register"),
-//                        withParent(allOf(withId(R.id.email_login_form),
-//                                withParent(withId(R.id.login_form))))));
-//        appCompatButton2.perform(scrollTo(), click());
-//
-//        ViewInteraction appCompatEditText = onView(
-//                allOf(withId(R.id.e_mail_tv), isDisplayed()));
-//        appCompatEditText.perform(replaceText("Test@gmail.com"), closeSoftKeyboard());
-//
-//        ViewInteraction appCompatEditText2 = onView(
-//                allOf(withId(R.id.username_tv), isDisplayed()));
-//        appCompatEditText2.perform(replaceText("Test"), closeSoftKeyboard());
-//
-//        ViewInteraction appCompatEditText3 = onView(
-//                allOf(withId(R.id.password_tv), isDisplayed()));
-//        appCompatEditText3.perform(replaceText("qwerty"), closeSoftKeyboard());
-//
-//        ViewInteraction appCompatButton3 = onView(
-//                allOf(withId(R.id.register_button), withText("Register"), isDisplayed()));
-//        appCompatButton3.perform(click());
 
         ViewInteraction appCompatAutoCompleteTextView = onView(
                 withId(R.id.email));
@@ -99,7 +78,7 @@ public class FrendRequestTest {
                 allOf(withId(R.id.design_menu_item_text), withText("Friends"), isDisplayed()));
         appCompatCheckedTextView.perform(click());
 
-        wait(3000);
+        wait(5000);
 
         ViewInteraction floatingActionButton = onView(
                 allOf(withId(R.id.fab_add_friend),
@@ -145,6 +124,12 @@ public class FrendRequestTest {
         wait(3000);
 
         openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
+
+        ViewInteraction apppCompatt = onView(
+                allOf(withId(R.id.title), withText("Logout"), isDisplayed()));
+        apppCompatt.perform(click());
+
+        wait(3000);
 
     }
 
