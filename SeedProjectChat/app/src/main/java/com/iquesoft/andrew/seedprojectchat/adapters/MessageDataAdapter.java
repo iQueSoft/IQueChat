@@ -68,7 +68,6 @@ public class MessageDataAdapter extends RecyclerView.Adapter<MessageDataAdapter.
         }
 
     }
-
 //    private void addDirectoryChooserAsFloatingFragment(FragmentManager fragmentManager) {
 //        DialogFragment directoryChooserFragment = DirectoryChooserFragment.newInstance(currentRootDirectory);
 //        FragmentTransaction transaction = fragmentManager.beginTransaction();
