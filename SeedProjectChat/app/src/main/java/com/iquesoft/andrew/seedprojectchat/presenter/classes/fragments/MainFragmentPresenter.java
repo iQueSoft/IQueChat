@@ -21,13 +21,6 @@ public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
     private ArrayList<BaseChatModel> objectArrayList = new ArrayList<>();
     private Subscription subscription;
 
-//    @Override
-//    protected void onFirstViewAttach() {
-//        getFriendListAndGroupChatList();
-//        super.onFirstViewAttach();
-//    }
-
-
     @Override
     public void attachView(IMainFragment view) {
         getFriendListAndGroupChatList();
@@ -37,11 +30,11 @@ public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
     @Override
     public void detachView(IMainFragment view) {
         subscription.unsubscribe();
-        objectArrayList.clear();
         super.detachView(view);
     }
 
     private void getFriendListAndGroupChatList(){
+        objectArrayList.clear();
         subscription = ApiCall.getCurentFriendList().subscribe(response -> {
             Observable.from(response).subscribe(friends -> {
                 objectArrayList.add(friends);
