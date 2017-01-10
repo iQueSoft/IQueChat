@@ -1,6 +1,7 @@
 package com.iquesoft.andrew.seedprojectchat.view.classes.fragments;
 
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.backendless.Backendless;
 import com.iquesoft.andrew.seedprojectchat.R;
 import com.iquesoft.andrew.seedprojectchat.common.BaseFragment;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
@@ -19,9 +21,15 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ISettingsFr
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import id.zelory.compressor.FileUtil;
+
+import static android.app.Activity.RESULT_OK;
+import static com.iquesoft.andrew.seedprojectchat.view.classes.fragments.RegisterFragment.GALLERY_REQUEST;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -65,6 +73,35 @@ public class SettingsFragment extends BaseFragment implements ISettingsFragment 
         etUserEmail.setText(presenter.getCurentUser().getEmail());
         etUsername.setText(presenter.getCurentUser().getProperty(ChatUser.NAME).toString());
         super.onActivityCreated(savedInstanceState);
+    }
+
+    public void photoSelector() {
+            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+            photoPickerIntent.setType("image/*");
+            startActivityForResult(photoPickerIntent, GALLERY_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+        File image = null;
+        try {
+            image = FileUtil.from(getActivity(), imageReturnedIntent.getData());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        switch (requestCode) {
+            case GALLERY_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    presenter.uploadUserPhoto(image, cimUserImage, Backendless.UserService.CurrentUser().getEmail(), getActivity());
+                }
+        }
+    }
+
+    @OnClick(R.id.cim_user_image)
+    public void clickChangeUserPhoto(){
+        photoSelector();
     }
 
     @OnClick(R.id.button_save_user_info)
