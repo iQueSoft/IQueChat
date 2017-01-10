@@ -37,36 +37,59 @@ public class SettingsFragmentPresenter extends MvpPresenter<ISettingsFragment> {
     private String uriPhoto;
 
     public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail, Context context) {
-            if (userEMail != null) {
+        String userMail = userEMail.replace("@", "");
+            if (userMail != null) {
                 Bitmap compressedImageBitmap = Compressor.getDefault(context).compressToBitmap(file);
                 String uri = Backendless.UserService.CurrentUser().getProperty("photo").toString();
-                Backendless.Files.remove(uri, new DefaultBackendlessCallback<Void>(){
-                    @Override
-                    public void handleResponse(Void response) {
-                        Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
-                            @Override
-                            public void handleResponse(final BackendlessFile backendlessFile) {
-                                uriPhoto = backendlessFile.getFileURL();
-                                Log.i("response", uriPhoto);
-                                curentUser.setProperty("photo", uriPhoto);
-                                Uri uri = Uri.parse(uriPhoto);
-                                Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).into(circleImageView);
-                            }
+                if (Backendless.UserService.CurrentUser().getProperty("photo").toString().equals("")){
+                    Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
+                        @Override
+                        public void handleResponse(final BackendlessFile backendlessFile) {
+                            uriPhoto = backendlessFile.getFileURL();
+                            curentUser.setProperty("photo", uriPhoto);
+                            Uri uri = Uri.parse(uriPhoto);
+                            Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).into(circleImageView);
+                        }
 
-                            @Override
-                            public void handleFault(BackendlessFault backendlessFault) {
-                                Toast.makeText(context, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
-                                Log.i("response", backendlessFault.toString());
-                            }
-                        });
-                        super.handleResponse(response);
-                    }
+                        @Override
+                        public void handleFault(BackendlessFault backendlessFault) {
+                            Toast.makeText(context, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
+                            Log.i("response", backendlessFault.toString());
+                        }
+                    });
+                } else {
+                    String updateUri = uri.replace("https://api.backendless.com/569FA24A-78A5-D20C-FF44-EC7884E70D00/v1/files/", "");
+                    Log.d("response", updateUri);
+                    Backendless.Files.remove(updateUri, new DefaultBackendlessCallback<Void>(){
+                        @Override
+                        public void handleResponse(Void response) {
+                            Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
+                                @Override
+                                public void handleResponse(final BackendlessFile backendlessFile) {
+                                    uriPhoto = backendlessFile.getFileURL();
+                                    Log.i("response", uriPhoto);
+                                    curentUser.setProperty("photo", uriPhoto);
+                                    Uri uri = Uri.parse(uriPhoto);
+                                    Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).into(circleImageView);
+                                }
 
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        super.handleFault(fault);
-                    }
-                });
+                                @Override
+                                public void handleFault(BackendlessFault backendlessFault) {
+                                    Toast.makeText(context, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
+                                    Log.i("response", backendlessFault.toString());
+                                }
+                            });
+                            Log.d("response", "HandleResponse");
+                            super.handleResponse(response);
+                        }
+
+                        @Override
+                        public void handleFault(BackendlessFault fault) {
+                            Log.d("response", fault.toString());
+                            super.handleFault(fault);
+                        }
+                    });
+                }
             } else {
                 Toast.makeText(context, "Insert you eMail", Toast.LENGTH_LONG).show();
             }

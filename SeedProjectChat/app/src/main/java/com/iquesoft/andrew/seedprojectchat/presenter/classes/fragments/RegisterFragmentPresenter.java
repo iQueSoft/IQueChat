@@ -36,10 +36,11 @@ public class RegisterFragmentPresenter extends MvpPresenter<IRegisterFragment> i
     private String uriPhoto;
 
     public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail, Context context) {
+        String userMail = userEMail.replace("@", "");
         Thread uploadPhotoThread = new Thread(() -> {
-            if (userEMail != null) {
+            if (userMail != null) {
                 Bitmap compressedImageBitmap = Compressor.getDefault(context).compressToBitmap(file);
-                Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
+                Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
                     @Override
                     public void handleResponse(final BackendlessFile backendlessFile) {
                         uriPhoto = backendlessFile.getFileURL();
