@@ -76,9 +76,9 @@ public class SettingsFragment extends BaseFragment implements ISettingsFragment 
     }
 
     public void photoSelector() {
-            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-            photoPickerIntent.setType("image/*");
-            startActivityForResult(photoPickerIntent, GALLERY_REQUEST);
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, GALLERY_REQUEST);
     }
 
     @Override
