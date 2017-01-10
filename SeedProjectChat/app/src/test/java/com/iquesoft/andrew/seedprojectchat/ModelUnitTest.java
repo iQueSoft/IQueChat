@@ -177,5 +177,5 @@ public class ModelUnitTest extends Mockito {
         assertEquals(testMap.get("name"), map1.get("name"));
         assertEquals(testMap.get("age"), map1.get("age"));
         assertEquals(testMap.get("isAdmin"), map1.get("isAdmin"));
-}
+    }
 }
