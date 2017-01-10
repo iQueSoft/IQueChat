@@ -1,6 +1,9 @@
 package com.iquesoft.andrew.seedprojectchat.presenter.classes.fragments;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -8,10 +11,20 @@ import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.backendless.files.BackendlessFile;
+import com.iquesoft.andrew.seedprojectchat.R;
+import com.iquesoft.andrew.seedprojectchat.common.DefaultBackendlessCallback;
 import com.iquesoft.andrew.seedprojectchat.model.ChatUser;
 import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ISettingsFragment;
+import com.mikhaellopez.circularimageview.CircularImageView;
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
+
+import id.zelory.compressor.Compressor;
 
 /**
  * Created by andru on 10/20/2016.
@@ -20,6 +33,44 @@ import com.iquesoft.andrew.seedprojectchat.view.interfaces.fragments.ISettingsFr
 public class SettingsFragmentPresenter extends MvpPresenter<ISettingsFragment> {
 
     private BackendlessUser curentUser = Backendless.UserService.CurrentUser();
+
+    private String uriPhoto;
+
+    public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail, Context context) {
+            if (userEMail != null) {
+                Bitmap compressedImageBitmap = Compressor.getDefault(context).compressToBitmap(file);
+                String uri = Backendless.UserService.CurrentUser().getProperty("photo").toString();
+                Backendless.Files.remove(uri, new DefaultBackendlessCallback<Void>(){
+                    @Override
+                    public void handleResponse(Void response) {
+                        Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userEMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
+                            @Override
+                            public void handleResponse(final BackendlessFile backendlessFile) {
+                                uriPhoto = backendlessFile.getFileURL();
+                                Log.i("response", uriPhoto);
+                                curentUser.setProperty("photo", uriPhoto);
+                                Uri uri = Uri.parse(uriPhoto);
+                                Picasso.with(context).load(uri).placeholder(R.drawable.seed_logo).into(circleImageView);
+                            }
+
+                            @Override
+                            public void handleFault(BackendlessFault backendlessFault) {
+                                Toast.makeText(context, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
+                                Log.i("response", backendlessFault.toString());
+                            }
+                        });
+                        super.handleResponse(response);
+                    }
+
+                    @Override
+                    public void handleFault(BackendlessFault fault) {
+                        super.handleFault(fault);
+                    }
+                });
+            } else {
+                Toast.makeText(context, "Insert you eMail", Toast.LENGTH_LONG).show();
+            }
+    }
 
     public BackendlessUser getCurentUser() {
         return curentUser;

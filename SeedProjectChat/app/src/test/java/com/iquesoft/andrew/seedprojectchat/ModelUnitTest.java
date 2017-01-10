@@ -7,14 +7,17 @@ import com.iquesoft.andrew.seedprojectchat.model.Friends;
 import com.iquesoft.andrew.seedprojectchat.model.GroupChat;
 import com.iquesoft.andrew.seedprojectchat.model.Messages;
 import com.iquesoft.andrew.seedprojectchat.util.Future;
+import com.iquesoft.andrew.seedprojectchat.util.StringToMapUtils;
 
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -162,4 +165,17 @@ public class ModelUnitTest extends Mockito {
         assertEquals("Test", groupChat.getChatName());
         assertEquals(date, groupChat.getUpdated());
     }
+
+    @Test
+    public void stringToMapUtilTest(){
+        String map = "{name=Test, age=35, isAdmin=false}";
+        Map<String, String> testMap = new HashMap<>();
+        testMap.put("name", "Test");
+        testMap.put("age", "35");
+        testMap.put("isAdmin", "false");
+        Map<String, String> map1 = StringToMapUtils.splitToMap(map, ", ", "=");
+        assertEquals(testMap.get("name"), map1.get("name"));
+        assertEquals(testMap.get("age"), map1.get("age"));
+        assertEquals(testMap.get("isAdmin"), map1.get("isAdmin"));
+}
 }

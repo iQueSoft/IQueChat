@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
+import rx.Subscription;
 
 /**
  * Created by andru on 08.11.2016.
@@ -18,15 +19,30 @@ import rx.Observable;
 public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
 
     private ArrayList<BaseChatModel> objectArrayList = new ArrayList<>();
+    private Subscription subscription;
+
+//    @Override
+//    protected void onFirstViewAttach() {
+//        getFriendListAndGroupChatList();
+//        super.onFirstViewAttach();
+//    }
+
 
     @Override
-    protected void onFirstViewAttach() {
+    public void attachView(IMainFragment view) {
         getFriendListAndGroupChatList();
-        super.onFirstViewAttach();
+        super.attachView(view);
     }
 
-    public void getFriendListAndGroupChatList(){
-        ApiCall.getCurentFriendList().subscribe(response -> {
+    @Override
+    public void detachView(IMainFragment view) {
+        subscription.unsubscribe();
+        objectArrayList.clear();
+        super.detachView(view);
+    }
+
+    private void getFriendListAndGroupChatList(){
+        subscription = ApiCall.getCurentFriendList().subscribe(response -> {
             Observable.from(response).subscribe(friends -> {
                 objectArrayList.add(friends);
             });
