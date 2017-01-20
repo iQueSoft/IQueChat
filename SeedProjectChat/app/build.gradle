@@ -8,7 +8,7 @@ android {
     buildToolsVersion "25.0.0"
 
     defaultConfig {
-        applicationId "com.iquesoft.andrew.seedprojectchat"
+        applicationId "net.iquesoft.android.seedprojectchat"
         minSdkVersion 19
         targetSdkVersion 25
         versionCode 1

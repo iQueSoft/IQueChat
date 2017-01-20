@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment">
+    tools:context="com.iquesoft.andrew.seedprojectchat.net.iquesoft.andrew.seedprojectchat.view.classes.fragments.AboutUsFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <ScrollView
