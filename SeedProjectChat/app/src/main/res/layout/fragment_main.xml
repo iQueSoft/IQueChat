@@ -3,6 +3,6 @@
     android:id="@+id/main_screen_recycler_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.iquesoft.andrew.seedprojectchat.view.classes.fragments.MainFragment">
+    tools:context="com.iquesoft.andrew.seedprojectchat.net.iquesoft.andrew.seedprojectchat.view.classes.fragments.MainFragment">
 
 </android.support.v7.widget.RecyclerView>
