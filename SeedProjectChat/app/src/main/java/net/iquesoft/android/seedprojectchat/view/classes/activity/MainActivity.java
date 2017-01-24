@@ -79,6 +79,10 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
     private Boolean mainFlag = false;
 
+    CircularImageView headerImage;
+    TextView userName;
+    TextView userEMail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,15 +104,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         navigationView.setNavigationItemSelectedListener(this);
         ButterKnife.bind(navigationView.getHeaderView(0));
         View headerView = navigationView.getHeaderView(0);
-        CircularImageView headerImage = (CircularImageView) headerView.findViewById(net.iquesoft.android.seedprojectchat.R.id.header_image_view);
-        TextView userName = (TextView) headerView.findViewById(net.iquesoft.android.seedprojectchat.R.id.tv_user_name);
-        TextView userEMail = (TextView) headerView.findViewById(net.iquesoft.android.seedprojectchat.R.id.tv_last_message);
+        headerImage = (CircularImageView) headerView.findViewById(net.iquesoft.android.seedprojectchat.R.id.header_image_view);
+        userName = (TextView) headerView.findViewById(net.iquesoft.android.seedprojectchat.R.id.tv_user_name);
+        userEMail = (TextView) headerView.findViewById(net.iquesoft.android.seedprojectchat.R.id.tv_last_message);
         if (Backendless.UserService.CurrentUser().getProperty("photo") != null) {
             Uri uri = Uri.parse(Backendless.UserService.CurrentUser().getProperty("photo").toString());
-            Picasso.with(getBaseContext()).load(uri).placeholder(net.iquesoft.android.seedprojectchat.R.drawable.seed_logo).into(headerImage);
+            setNavigationHeaderImage(uri);
         }
-        userName.setText(Backendless.UserService.CurrentUser().getProperty("name").toString());
-        userEMail.setText(Backendless.UserService.CurrentUser().getProperty("email").toString());
+        setNavigationNameAndEmail(Backendless.UserService.CurrentUser().getProperty("name").toString(),
+                Backendless.UserService.CurrentUser().getProperty("email").toString());
 
         if (mainFlag.equals(false)){
             navigationView.setCheckedItem(net.iquesoft.android.seedprojectchat.R.id.nav_home);
@@ -116,6 +120,15 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             replaceFragment(mainFragment);
             mainFlag = true;
         }
+    }
+
+    public void setNavigationHeaderImage(Uri uri){
+            Picasso.with(getBaseContext()).load(uri).placeholder(net.iquesoft.android.seedprojectchat.R.drawable.seed_logo).into(headerImage);
+    }
+
+    public void setNavigationNameAndEmail(String name, String email){
+        userName.setText(name);
+        userEMail.setText(email);
     }
 
     @Override

@@ -9,9 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
+import net.iquesoft.android.seedprojectchat.R;
 import net.iquesoft.android.seedprojectchat.adapters.UserListAdapter;
 import net.iquesoft.android.seedprojectchat.common.BaseFragment;
 import net.iquesoft.android.seedprojectchat.common.DefaultBackendlessCallback;
@@ -33,7 +36,7 @@ import io.huannguyen.swipetodeleterv.ItemRemovalListener;
 import io.huannguyen.swipetodeleterv.STDRecyclerView;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
-import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
 
 public class FriendsFragment extends BaseFragment implements IFriendsFragment {
 
@@ -49,6 +52,12 @@ public class FriendsFragment extends BaseFragment implements IFriendsFragment {
     @BindView(net.iquesoft.android.seedprojectchat.R.id.fragment_friends_container)
     FrameLayout frameLayout;
 
+    @BindView(R.id.swipe_refresh)
+    SwipyRefreshLayout swipyRefreshLayout;
+
+    @BindView(R.id.progress)
+    ProgressBar progressBar;
+
     private MainActivity mainActivity;
 
     private View rootView;
@@ -56,6 +65,14 @@ public class FriendsFragment extends BaseFragment implements IFriendsFragment {
     @OnClick(net.iquesoft.android.seedprojectchat.R.id.fab_add_friend)
     public void addFriend() {
         mainActivity.setFindFriendFragment();
+    }
+
+    public void setProgressBarVisible() {
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void setProgressBarGone() {
+        progressBar.setVisibility(View.GONE);
     }
 
     @Nullable
@@ -75,14 +92,20 @@ public class FriendsFragment extends BaseFragment implements IFriendsFragment {
         super.onActivityCreated(savedInstanceState);
         mainActivity = (MainActivity) getActivity();
         this.getComponent(IMainActivityComponent.class).inject(this);
+
+        swipyRefreshLayout.setOnRefreshListener(direction -> {
+            presenter.updateCurentFriendList();
+            swipyRefreshLayout.setRefreshing(false);
+        });
     }
 
 
-    public BehaviorSubject<List<Friends>> getCurentFriendList(){
+    public PublishSubject<List<Friends>> getCurentFriendList(){
         return presenter.getCurentFriendList();
     }
 
     public void setUserAdapter(List<Friends> users) {
+        presenter.setFriendsList(users);
         UserListAdapter adapter = new UserListAdapter(users, getActivity());
         adapter.setItemRemovalListener(new ItemRemovalListener() {
             @Override
@@ -108,9 +131,10 @@ public class FriendsFragment extends BaseFragment implements IFriendsFragment {
         scaleInAnimationAdapter.setFirstOnly(true);
         scaleInAnimationAdapter.setDuration(500);
         stdRecyclerView.setupSwipeToDelete(adapter, ItemTouchHelper.RIGHT);
+        setProgressBarGone();
         stdRecyclerView.setAdapter(scaleInAnimationAdapter);
         stdRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), (view, position) ->{
-            chatWithFriendFragment.setFriend(users.get(position));
+            chatWithFriendFragment.setFriend(presenter.getFriendsList().get(position));
             mainActivity.replaceFragment(chatWithFriendFragment);
         }));
 
