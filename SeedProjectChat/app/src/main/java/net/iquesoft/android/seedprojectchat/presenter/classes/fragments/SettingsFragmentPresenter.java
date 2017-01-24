@@ -20,6 +20,7 @@ import com.squareup.picasso.Picasso;
 
 import net.iquesoft.android.seedprojectchat.common.DefaultBackendlessCallback;
 import net.iquesoft.android.seedprojectchat.model.ChatUser;
+import net.iquesoft.android.seedprojectchat.view.classes.activity.MainActivity;
 import net.iquesoft.android.seedprojectchat.view.interfaces.fragments.ISettingsFragment;
 
 import java.io.File;
@@ -32,24 +33,29 @@ public class SettingsFragmentPresenter extends MvpPresenter<ISettingsFragment> {
     private BackendlessUser curentUser = Backendless.UserService.CurrentUser();
     private String uriPhoto;
 
-    public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail, Context context) {
+    public void uploadUserPhoto(File file, CircularImageView circleImageView, String userEMail, MainActivity mainActivity) {
         String userMail = userEMail.replace("@", "");
         if (userMail != null) {
-            Bitmap compressedImageBitmap = Compressor.getDefault(context).compressToBitmap(file);
-            String uri = Backendless.UserService.CurrentUser().getProperty("photo").toString();
-            if (Backendless.UserService.CurrentUser().getProperty("photo").toString().equals("")){
+            Bitmap compressedImageBitmap = Compressor.getDefault(mainActivity).compressToBitmap(file);
+            String uri;
+            try {
+              uri = Backendless.UserService.CurrentUser().getProperty("photo").toString();
+            } catch (NullPointerException e){
+                uri = "";
+            }
+            if (uri.equals("")){
                 Backendless.Files.Android.upload(compressedImageBitmap, Bitmap.CompressFormat.PNG, 80, userMail + "-MainPhoto.png", "userPhoto", new AsyncCallback<BackendlessFile>() {
                     @Override
                     public void handleResponse(final BackendlessFile backendlessFile) {
                         uriPhoto = backendlessFile.getFileURL();
                         curentUser.setProperty("photo", uriPhoto);
                         Uri uri = Uri.parse(uriPhoto);
-                        Picasso.with(context).load(uri).placeholder(net.iquesoft.android.seedprojectchat.R.drawable.seed_logo).into(circleImageView);
+                        Picasso.with(mainActivity).load(uri).placeholder(net.iquesoft.android.seedprojectchat.R.drawable.seed_logo).into(circleImageView);
                     }
 
                     @Override
                     public void handleFault(BackendlessFault backendlessFault) {
-                        Toast.makeText(context, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mainActivity, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
                         Log.i("response", backendlessFault.toString());
                     }
                 });
@@ -66,12 +72,13 @@ public class SettingsFragmentPresenter extends MvpPresenter<ISettingsFragment> {
                                 Log.i("response", uriPhoto);
                                 curentUser.setProperty("photo", uriPhoto);
                                 Uri uri = Uri.parse(uriPhoto);
-                                Picasso.with(context).load(uri).placeholder(net.iquesoft.android.seedprojectchat.R.drawable.seed_logo).into(circleImageView);
+                                Picasso.with(mainActivity).load(uri).placeholder(net.iquesoft.android.seedprojectchat.R.drawable.seed_logo).into(circleImageView);
+                                mainActivity.setNavigationHeaderImage(uri);
                             }
 
                             @Override
                             public void handleFault(BackendlessFault backendlessFault) {
-                                Toast.makeText(context, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mainActivity, backendlessFault.toString(), Toast.LENGTH_SHORT).show();
                                 Log.i("response", backendlessFault.toString());
                             }
                         });
@@ -87,7 +94,7 @@ public class SettingsFragmentPresenter extends MvpPresenter<ISettingsFragment> {
                 });
             }
         } else {
-            Toast.makeText(context, "Insert you eMail", Toast.LENGTH_LONG).show();
+            Toast.makeText(mainActivity, "Insert you eMail", Toast.LENGTH_LONG).show();
         }
     }
 
