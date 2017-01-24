@@ -19,6 +19,7 @@ import com.squareup.picasso.Picasso;
 import net.iquesoft.android.seedprojectchat.common.BaseFragment;
 import net.iquesoft.android.seedprojectchat.model.ChatUser;
 import net.iquesoft.android.seedprojectchat.presenter.classes.fragments.SettingsFragmentPresenter;
+import net.iquesoft.android.seedprojectchat.view.classes.activity.MainActivity;
 import net.iquesoft.android.seedprojectchat.view.interfaces.fragments.ISettingsFragment;
 
 import java.io.File;
@@ -93,7 +94,7 @@ public class SettingsFragment extends BaseFragment implements ISettingsFragment 
         switch (requestCode) {
             case RegisterFragment.GALLERY_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    presenter.uploadUserPhoto(image, cimUserImage, Backendless.UserService.CurrentUser().getEmail(), getActivity());
+                    presenter.uploadUserPhoto(image, cimUserImage, Backendless.UserService.CurrentUser().getEmail(), (MainActivity) getActivity());
                 }
         }
     }

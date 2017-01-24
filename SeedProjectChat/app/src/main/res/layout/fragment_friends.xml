@@ -8,19 +8,35 @@
     android:layout_height="match_parent"
     app:cardCornerRadius="8dp">
 
-    <io.huannguyen.swipetodeleterv.STDRecyclerView
-        android:id="@+id/recycler_view"
-        android:scrollbars="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        stdrv:border_color="@android:color/darker_gray"
-        stdrv:delete_icon_color="#000000"
-        stdrv:delete_icon_height="24dp"
-        stdrv:delete_icon_width="24dp"
-        stdrv:left_delete_icon_margin="32dp"
-        stdrv:delete_message="Delete ?"
-        stdrv:right_delete_icon_margin="32dp"
-        stdrv:has_border="true"/>
+    <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
+        android:id="@+id/swipe_refresh"
+        app:srl_direction="bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <io.huannguyen.swipetodeleterv.STDRecyclerView
+            android:id="@+id/recycler_view"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            stdrv:border_color="@android:color/darker_gray"
+            stdrv:delete_icon_color="#000000"
+            stdrv:delete_icon_height="24dp"
+            stdrv:delete_icon_width="24dp"
+            stdrv:left_delete_icon_margin="32dp"
+            stdrv:delete_message="Delete ?"
+            stdrv:right_delete_icon_margin="32dp"
+            stdrv:has_border="true"/>
+    </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Inverse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:indeterminate="false"
+        android:layout_gravity="center_vertical|center_horizontal" />
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
@@ -33,4 +49,5 @@
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
         app:layout_behavior="com.iquesoft.andrew.seedprojectchat.util.Fab_Float_onScroll"/>
+
 </FrameLayout>
