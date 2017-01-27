@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface IInviteToFriendFragment extends MvpView {
     void setUserAdapter(List<Friends> users);
+    void setProgressBarVisible();
+    void setProgressBarGone();
 }

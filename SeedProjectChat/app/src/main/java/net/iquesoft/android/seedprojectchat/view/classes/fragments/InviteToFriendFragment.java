@@ -8,9 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
+import android.widget.ProgressBar;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 
+import net.iquesoft.android.seedprojectchat.R;
 import net.iquesoft.android.seedprojectchat.adapters.InvateToFriendFragmentAdapter;
 import net.iquesoft.android.seedprojectchat.common.BaseFragment;
 import net.iquesoft.android.seedprojectchat.di.components.IMainActivityComponent;
@@ -33,9 +36,22 @@ public class InviteToFriendFragment extends BaseFragment implements IInviteToFri
     @BindView(net.iquesoft.android.seedprojectchat.R.id.recycler_invite)
     RecyclerView recyclerInvite;
 
+    @BindView(R.id.swipe_refresh)
+    SwipyRefreshLayout swipyRefreshLayout;
+
+    @BindView(R.id.progress_bar_invite_friends)
+    ProgressBar progressBar;
+
     private View rootView;
     private InvateToFriendFragmentAdapter adapter;
 
+    public void setProgressBarVisible() {
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void setProgressBarGone() {
+        progressBar.setVisibility(View.GONE);
+    }
 
     @Nullable
     @Override
@@ -51,12 +67,10 @@ public class InviteToFriendFragment extends BaseFragment implements IInviteToFri
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         this.getComponent(IMainActivityComponent.class).inject(this);
-    }
-
-
-    @Override
-    public void onPause() {
-        super.onPause();
+        swipyRefreshLayout.setOnRefreshListener(direction -> {
+            presenter.updateInvites();
+            swipyRefreshLayout.setRefreshing(false);
+        });
     }
 
     public void setUserAdapter(List<Friends> users) {
@@ -67,6 +81,7 @@ public class InviteToFriendFragment extends BaseFragment implements IInviteToFri
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
         scaleInAnimationAdapter.setFirstOnly(true);
         scaleInAnimationAdapter.setDuration(500);
+        setProgressBarGone();
         recyclerInvite.setAdapter(scaleInAnimationAdapter);
     }
 }
