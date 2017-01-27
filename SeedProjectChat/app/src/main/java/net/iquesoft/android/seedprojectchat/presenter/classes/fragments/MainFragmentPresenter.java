@@ -30,7 +30,8 @@ public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
         super.detachView(view);
     }
 
-    private void getFriendListAndGroupChatList(){
+    public void getFriendListAndGroupChatList(){
+        getViewState().setProgressBarVisible();
         objectArrayList.clear();
         subscription = ApiCall.getCurentFriendList().subscribe(response -> {
             Observable.from(response).subscribe(friends -> {

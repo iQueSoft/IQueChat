@@ -1,5 +1,6 @@
 package net.iquesoft.android.seedprojectchat.view.classes.activity;
 
+import android.annotation.TargetApi;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -10,6 +11,9 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.transition.ChangeBounds;
+import android.transition.Slide;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -230,6 +234,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     public void replaceFragment(Fragment fragment) {
         String backStateName = "chatBackStack";
         String fragmentTag = fragment.getClass().getName();
+        setAnimation(fragment);
 
         FragmentManager manager = getSupportFragmentManager();
         boolean fragmentPopped = manager.popBackStackImmediate(backStateName, 0);
@@ -247,6 +252,16 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             ft.commit();
         }
 
+    }
+
+    @TargetApi(21)
+    private void setAnimation(Fragment fragment){
+        Slide slideTransition = new Slide(Gravity.LEFT);
+        slideTransition.setDuration(500);
+        // Create fragment and define some of it transitions
+        fragment.setReenterTransition(slideTransition);
+        fragment.setExitTransition(slideTransition);
+        fragment.setSharedElementEnterTransition(new ChangeBounds());
     }
 
     @Override

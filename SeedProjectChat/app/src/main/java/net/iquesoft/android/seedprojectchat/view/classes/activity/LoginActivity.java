@@ -1,9 +1,12 @@
 package net.iquesoft.android.seedprojectchat.view.classes.activity;
 
+import android.annotation.TargetApi;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.transition.Slide;
+import android.view.Gravity;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
 
@@ -43,9 +46,20 @@ public class LoginActivity extends BaseActivity implements ILoginActivity, IHasC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(net.iquesoft.android.seedprojectchat.R.layout.activity_login);
+        setupWindowAnimations();
         ButterKnife.bind(this);
         fragmentManager = getSupportFragmentManager();
         setLoginFragment();
+    }
+
+    @TargetApi(21)
+    private void setupWindowAnimations() {
+        // Re-enter transition is executed when returning to this activity
+        Slide slideTransition = new Slide();
+        slideTransition.setSlideEdge(Gravity.START);
+        slideTransition.setDuration(500);
+        getWindow().setReenterTransition(slideTransition);
+        getWindow().setExitTransition(slideTransition);
     }
 
     public void setLoginFragment(){

@@ -6,5 +6,7 @@ import net.iquesoft.android.seedprojectchat.model.BaseChatModel;
 import java.util.List;
 
 public interface IMainFragment extends MvpView {
-    public void setRecyclerMain(List<BaseChatModel> baseChatModelList);
+    void setRecyclerMain(List<BaseChatModel> baseChatModelList);
+    void setProgressBarVisible();
+    void setProgressBarGone();
 }
