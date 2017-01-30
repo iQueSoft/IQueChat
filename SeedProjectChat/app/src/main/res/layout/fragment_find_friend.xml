@@ -29,20 +29,36 @@
             </android.support.design.widget.TextInputLayout>
 
             <Button
-                android:text="Button"
+                android:text="Find"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/btn_find_users"
                 android:layout_weight="20"
                 android:elevation="8dp"
                 android:layout_gravity="center_vertical|center_horizontal" />
+
         </LinearLayout>
 
-        <android.support.v7.widget.RecyclerView
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/linearLayout"
-            android:id="@+id/recycler_view_find_user" />
+            android:layout_below="@+id/linearLayout">
+
+            <android.support.v7.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/recycler_view_find_user" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="false"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:id="@+id/progressBar"
+                android:visibility="gone"
+                android:focusable="true" />
+        </FrameLayout>
 
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

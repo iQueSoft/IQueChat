@@ -11,6 +11,8 @@ import java.util.List;
 
 import rx.Observable;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 @InjectViewState
 public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
@@ -34,7 +36,7 @@ public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
         getViewState().setProgressBarVisible();
         objectArrayList.clear();
         subscription = ApiCall.getCurentFriendList().subscribe(response -> {
-            Observable.from(response).subscribe(friends -> {
+            Observable.from(response).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(friends -> {
                 objectArrayList.add(friends);
             });
             getGroupChatListAndAddAdapter();
@@ -44,13 +46,13 @@ public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
     private void getGroupChatListAndAddAdapter() {
         ApiCall.getGroupChatList()
                 .subscribe(response -> {
-                    Observable.from(response).subscribe(friends -> objectArrayList.add(friends));
+                    Observable.from(response).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(friends -> objectArrayList.add(friends));
                     setRecyclerAdapter(objectArrayList);
                 });
     }
 
     private void setRecyclerAdapter(List<BaseChatModel> objectArrayList) {
-        Observable.just(objectArrayList)
+        Observable.just(objectArrayList).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .flatMap(response -> Observable.from(response)
                         .filter(resp -> resp.getMessages().size() != 0).filter(resp -> resp.getUpdated() != null)
                         .toSortedList((messages, messages2) -> messages2.getUpdated()
