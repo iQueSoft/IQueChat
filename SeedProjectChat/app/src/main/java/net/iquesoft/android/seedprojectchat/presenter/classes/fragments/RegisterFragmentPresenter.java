@@ -19,6 +19,7 @@ import com.squareup.picasso.Picasso;
 import net.iquesoft.android.seedprojectchat.common.DefaultBackendlessCallback;
 import net.iquesoft.android.seedprojectchat.model.ChatUser;
 import net.iquesoft.android.seedprojectchat.presenter.interfaces.fragments.IRegisterFragmentPresenter;
+import net.iquesoft.android.seedprojectchat.util.AnswersEvents;
 import net.iquesoft.android.seedprojectchat.util.ValidateUtil;
 import net.iquesoft.android.seedprojectchat.view.classes.activity.LoginActivity;
 import net.iquesoft.android.seedprojectchat.view.interfaces.fragments.IRegisterFragment;
@@ -90,6 +91,7 @@ public class RegisterFragmentPresenter extends MvpPresenter<IRegisterFragment> i
                     super.handleResponse(response);
                     Log.i("response", response.toString());
                     showToast("You sucsesfull registred", loginActivity.getBaseContext());
+                    AnswersEvents.getInstance().register("Register in application");
                     loginActivity.setLoginFragment();
                 }
 
