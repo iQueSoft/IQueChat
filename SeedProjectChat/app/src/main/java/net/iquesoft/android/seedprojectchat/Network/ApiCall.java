@@ -38,6 +38,7 @@ public class ApiCall {
 
     public static synchronized PublishSubject<List<GroupChat>> getGroupChatList() {
         PublishSubject<List<GroupChat>> publishSubject = PublishSubject.create();
+        publishSubject.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
         String whereClause = "owner.objectId='" + Backendless.UserService.CurrentUser().getObjectId() + "'" + " or " +
                 "users.objectId='" + Backendless.UserService.CurrentUser().getObjectId() + "'";
         BackendlessDataQuery dataQuery = new BackendlessDataQuery();

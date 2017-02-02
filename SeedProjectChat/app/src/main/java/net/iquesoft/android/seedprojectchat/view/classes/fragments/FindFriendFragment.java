@@ -9,10 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.backendless.BackendlessUser;
 
+import net.iquesoft.android.seedprojectchat.R;
 import net.iquesoft.android.seedprojectchat.adapters.FindFriendAdapter;
 import net.iquesoft.android.seedprojectchat.common.BaseFragment;
 import net.iquesoft.android.seedprojectchat.di.components.IMainActivityComponent;
@@ -29,8 +31,6 @@ import butterknife.OnClick;
 import jp.wasabeef.recyclerview.adapters.ScaleInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.ScaleInAnimator;
 import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 public class FindFriendFragment extends BaseFragment implements IFindFriendFragment {
 
@@ -46,14 +46,25 @@ public class FindFriendFragment extends BaseFragment implements IFindFriendFragm
     EditText username;
     @BindView(net.iquesoft.android.seedprojectchat.R.id.recycler_view_find_user)
     RecyclerView recyclerViewFindUsers;
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
 
     private Subscription getFriendsSubscription;
 
     @OnClick(net.iquesoft.android.seedprojectchat.R.id.btn_find_users)
     public void findClick() {
-        getFriendsSubscription = friendsFragment.getCurentFriendList().subscribe(response ->{
-            presenter.getBackendlessUsers(username.getText().toString(), response).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(this::setUserAdapter);
-        });
+        setProgressBarVisible();
+        presenter.setUsername(username.getText().toString());
+        presenter.updateCurentFriendList();
+    }
+
+    public void setProgressBarVisible(){
+        progressBar.setFocusable(true);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void setProgressBarGone(){
+        progressBar.setVisibility(View.GONE);
     }
 
     @Nullable
@@ -72,19 +83,15 @@ public class FindFriendFragment extends BaseFragment implements IFindFriendFragm
         this.getComponent(IMainActivityComponent.class).inject(this);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    private void setUserAdapter(List<BackendlessUser> users) {
+    public void setUserAdapter(List<BackendlessUser> users) {
         FindFriendAdapter adapter = new FindFriendAdapter(users, getActivity());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         recyclerViewFindUsers.setLayoutManager(linearLayoutManager);
         recyclerViewFindUsers.setItemAnimator(new ScaleInAnimator(new OvershootInterpolator(1f)));
         ScaleInAnimationAdapter scaleInAnimationAdapter = new ScaleInAnimationAdapter(adapter);
-        scaleInAnimationAdapter.setFirstOnly(true);
+        scaleInAnimationAdapter.setFirstOnly(false);
         scaleInAnimationAdapter.setDuration(500);
+        setProgressBarGone();
         recyclerViewFindUsers.setAdapter(scaleInAnimationAdapter);
     }
 }

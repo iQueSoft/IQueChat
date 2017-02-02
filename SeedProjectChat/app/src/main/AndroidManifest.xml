@@ -54,6 +54,9 @@
             android:name="net.iquesoft.android.seedprojectchat.services.PushServices">
         </service>
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="b1e983c793a8e3fa69f1ea895192171163e0a800" />
     </application>
 
 </manifest>

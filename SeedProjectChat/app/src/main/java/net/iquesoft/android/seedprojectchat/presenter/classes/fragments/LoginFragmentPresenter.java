@@ -20,6 +20,7 @@ import com.google.android.gms.common.Scopes;
 import net.iquesoft.android.seedprojectchat.common.DefaultBackendlessCallback;
 import net.iquesoft.android.seedprojectchat.model.ChatUser;
 import net.iquesoft.android.seedprojectchat.presenter.interfaces.fragments.ILoginFragmentPresenter;
+import net.iquesoft.android.seedprojectchat.util.AnswersEvents;
 import net.iquesoft.android.seedprojectchat.util.UpdateCurentUser;
 import net.iquesoft.android.seedprojectchat.view.classes.activity.LoginActivity;
 import net.iquesoft.android.seedprojectchat.view.classes.activity.MainActivity;
@@ -42,7 +43,6 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                 public void handleResponse( BackendlessUser backendlessUser )
                 {
                     super.handleResponse( backendlessUser );
-                    Thread thread = new Thread(()->{
                         String deviceId = Build.SERIAL;
                         if( deviceId.isEmpty() )
                         {
@@ -53,8 +53,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                             backendlessUser.setProperty(ChatUser.ONLINE, true);
                             updateCurentUser.update(backendlessUser);
                         }
-                    });
-                    thread.start();
+                    AnswersEvents.getInstance().login("login app");
                     loginActivity.startActivity(new Intent(loginActivity.getBaseContext(), MainActivity.class));
                     getViewState().showProgress(false);
                     loginActivity.finish();
@@ -88,6 +87,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
                                 {
                                     super.handleResponse( currentUser );
                                     getViewState().setCurentUser(currentUser);
+                                    AnswersEvents.getInstance().login("auto login");
                                     getViewState().showProgress(false);
                                 }
                             } );
@@ -195,6 +195,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
             @Override
             public void handleResponse( BackendlessUser loggedInUser )
             {
+                AnswersEvents.getInstance().login("Twitter");
                 getViewState().setCurentUser(loggedInUser);
             }
 
@@ -217,6 +218,7 @@ public class LoginFragmentPresenter extends MvpPresenter<ILoginFragment> impleme
             @Override
             public void handleResponse( BackendlessUser loggedInUser )
             {
+                AnswersEvents.getInstance().login("facebook login");
                 getViewState().setCurentUser(loggedInUser);
             }
 

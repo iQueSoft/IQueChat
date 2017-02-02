@@ -33,6 +33,7 @@ import net.iquesoft.android.seedprojectchat.common.BaseFragment;
 import net.iquesoft.android.seedprojectchat.di.components.ILoginActivityComponent;
 import net.iquesoft.android.seedprojectchat.model.ChatUser;
 import net.iquesoft.android.seedprojectchat.presenter.classes.fragments.LoginFragmentPresenter;
+import net.iquesoft.android.seedprojectchat.util.AnswersEvents;
 import net.iquesoft.android.seedprojectchat.util.UpdateCurentUser;
 import net.iquesoft.android.seedprojectchat.util.ValidateUtil;
 import net.iquesoft.android.seedprojectchat.view.classes.activity.LoginActivity;
@@ -147,6 +148,7 @@ public class LoginFragment extends BaseFragment implements ILoginFragment, Googl
 
             if (result.isSuccess())
             {
+                AnswersEvents.getInstance().login("gmail");
                 presenter.loginInBackendless( result.getSignInAccount(), (LoginActivity) getActivity() , rememberPassword.isChecked());
             }
             else
