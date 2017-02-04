@@ -39,14 +39,14 @@ public class ActivityTest {
 
         ViewInteraction appCompatAutoCompleteTextView = onView(
                 ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.email));
-        appCompatAutoCompleteTextView.perform(scrollTo(), replaceText("AndruxaOsetrov@yandex.ru"), closeSoftKeyboard());
+        appCompatAutoCompleteTextView.perform(scrollTo(), replaceText("emulatornexus5@gmail.com"), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText = onView(
                 ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.password_tv));
-        appCompatEditText.perform(scrollTo(), replaceText("1234"), closeSoftKeyboard());
+        appCompatEditText.perform(scrollTo(), replaceText("qwerty"), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText2 = onView(
-                allOf(ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.password_tv), withText("1234")));
+                allOf(ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.password_tv), withText("qwerty")));
         appCompatEditText2.perform(pressImeActionButton());
 
         ViewInteraction appCompatButton2 = onView(

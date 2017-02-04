@@ -69,11 +69,11 @@ public class CheckTextMessageContent {
 
         ViewInteraction appCompatAutoCompleteTextView2 = onView(
                 ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.email));
-        appCompatAutoCompleteTextView2.perform(scrollTo(), replaceText("AndruxaOsetrov@yandex.ru"), closeSoftKeyboard());
+        appCompatAutoCompleteTextView2.perform(scrollTo(), replaceText("emulatornexus5@gmail.com"), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText = onView(
                 ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.password_tv));
-        appCompatEditText.perform(scrollTo(), replaceText("1234"), closeSoftKeyboard());
+        appCompatEditText.perform(scrollTo(), replaceText("qwerty"), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.sign_in_button), withText("Sign in"),
