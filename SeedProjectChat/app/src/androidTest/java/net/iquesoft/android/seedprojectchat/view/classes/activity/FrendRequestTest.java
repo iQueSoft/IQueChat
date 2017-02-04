@@ -54,7 +54,7 @@ public class FrendRequestTest {
 
         ViewInteraction appCompatAutoCompleteTextView = onView(
                 ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.email));
-        appCompatAutoCompleteTextView.perform(scrollTo(), replaceText("Test@gmail.com"), closeSoftKeyboard());
+        appCompatAutoCompleteTextView.perform(scrollTo(), replaceText("emulatornexus5@gmail.com"), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText4 = onView(
                 ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.password_tv));
@@ -89,10 +89,10 @@ public class FrendRequestTest {
 
         ViewInteraction appCompatEditText6 = onView(
                 allOf(ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.edit_text_username), isDisplayed()));
-        appCompatEditText6.perform(replaceText("andruxa"), closeSoftKeyboard());
+        appCompatEditText6.perform(replaceText("s4mini"), closeSoftKeyboard());
 
         ViewInteraction appCompatButton6 = onView(
-                allOf(ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.btn_find_users), withText("Button"),
+                allOf(ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.btn_find_users), withText("Find"),
                         withParent(ViewMatchers.withId(net.iquesoft.android.seedprojectchat.R.id.linearLayout)),
                         isDisplayed()));
         appCompatButton6.perform(click());
