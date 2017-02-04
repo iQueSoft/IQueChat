@@ -16,6 +16,7 @@ import com.backendless.messaging.PushPolicyEnum;
 import com.backendless.messaging.SubscriptionOptions;
 import com.backendless.services.messaging.MessageStatus;
 import com.backendless.services.messaging.PublishStatusEnum;
+
 import net.iquesoft.android.seedprojectchat.adapters.PreviewPhotoAdapter;
 import net.iquesoft.android.seedprojectchat.common.DefaultBackendlessCallback;
 import net.iquesoft.android.seedprojectchat.model.Messages;
@@ -96,10 +97,16 @@ public class MessageUtil {
                 .subscribeOn(Schedulers.io())
                 .flatMap(Observable::from)
                 .flatMap(response -> {
-                    Messages message = (Messages) response.getData();
-                    message.setHeader(response.getHeaders().get("android-ticker-text"));
-                    message.setRead(false);
-                    message.setMessage_id(response.getMessageId());
+                    Messages message = null;
+                    try {
+                        message = (Messages) response.getData();
+                        message.setHeader(response.getHeaders().get("android-ticker-text"));
+                        message.setRead(false);
+                        message.setMessage_id(response.getMessageId());
+                    } catch (ClassCastException e){
+                        e.printStackTrace();
+                        return null;
+                    }
                     return Observable.just(message);
                 }).filter(response -> !response.getTimestamp().equals(lastMessageDate))
                 .filter(response -> response != null);

@@ -21,16 +21,16 @@ public class MainFragmentPresenter extends MvpPresenter<IMainFragment> {
     private Subscription subscription;
 
     @Override
-    public void attachView(IMainFragment view) {
+    protected void onFirstViewAttach() {
         getFriendListAndGroupChatList();
-        super.attachView(view);
+        super.onFirstViewAttach();
     }
-
-    @Override
-    public void detachView(IMainFragment view) {
-        subscription.unsubscribe();
-        super.detachView(view);
-    }
+//
+//    @Override
+//    public void detachView(IMainFragment view) {
+//        subscription.unsubscribe();
+//        super.detachView(view);
+//    }
 
     public void getFriendListAndGroupChatList(){
         getViewState().setProgressBarVisible();

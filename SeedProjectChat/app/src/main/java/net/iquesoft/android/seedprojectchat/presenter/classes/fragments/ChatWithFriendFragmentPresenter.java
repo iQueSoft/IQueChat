@@ -4,6 +4,7 @@ import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
+import com.backendless.Subscription;
 import com.backendless.async.callback.BackendlessCallback;
 import com.backendless.persistence.BackendlessDataQuery;
 import net.iquesoft.android.seedprojectchat.adapters.ChatFragmentAdapter;
@@ -20,6 +21,7 @@ import rx.Observable;
 public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFriendFragment> implements IChatWithFriendFragmentPresenter {
 
     private rx.Subscription subscribeUpdateNewMessages;
+    private rx.Subscription subscriptionFiltrMessage;
     private Friends friends;
 
     public Friends getFriends() {
@@ -31,16 +33,28 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
     }
 
     @Override
+    protected void onFirstViewAttach() {
+        super.onFirstViewAttach();
+        Observable.from(getFriends().getMessages())
+                .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
+                .subscribe(response -> getViewState().setUserAdapter(response));
+    }
+
+    @Override
     public void attachView(IChatWithFriendFragment view) {
         MessageUtil.subscribe(friends.getObjectId());
-        subscribeUpdateNewMessages = MessageUtil
-                .obsSaveNewMessage(friends.getMessages().get(friends.getMessages().size() - 1).getTimestamp())
+        subscriptionFiltrMessage = Observable.from(getFriends().getMessages())
+                .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
                 .subscribe(response -> {
-            getFriends().getMessages().add(response);
-            getFriends().saveAsync(new DefaultBackendlessCallback<>());
-            MessageUtil.sendPushNotification(response, friends.getObjectId());
-            getViewState().updateLastVisibleMessage(response);
-        });
+                    subscribeUpdateNewMessages = MessageUtil
+                            .obsSaveNewMessage(response.get(friends.getMessages().size() - 1).getTimestamp())
+                            .subscribe(respons -> {
+                                getFriends().getMessages().add(respons);
+                                getFriends().saveAsync(new DefaultBackendlessCallback<>());
+                                MessageUtil.sendPushNotification(respons, friends.getObjectId());
+                                getViewState().updateLastVisibleMessage(respons);
+                            });
+                });
         super.attachView(view);
     }
 
@@ -53,6 +67,11 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
         }
         try {
             subscribeUpdateNewMessages.unsubscribe();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        try {
+            subscriptionFiltrMessage.unsubscribe();
         } catch (NullPointerException e){
             e.printStackTrace();
         }
@@ -72,14 +91,6 @@ public class ChatWithFriendFragmentPresenter extends MvpPresenter<IChatWithFrien
                 super.handleResponse(response);
             }
         });
-    }
-
-    @Override
-    protected void onFirstViewAttach() {
-        super.onFirstViewAttach();
-        Observable.from(getFriends().getMessages())
-                .toSortedList((messages, messages2) -> Long.valueOf(messages2.getTimestamp().getTime()).compareTo(messages.getTimestamp().getTime()))
-                .subscribe(response -> getViewState().setUserAdapter(response));
     }
 
     public void refreshMessageList(){
